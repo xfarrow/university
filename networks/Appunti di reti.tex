@@ -124,34 +124,13 @@ Con $La/R$ si denota l'intensità di traffico e il risultato è un numero adimen
 	
 	Questo perché $\frac{La}{R} > 1$ implica che $La > R$
 
-	\item \textbf{(2)} Se $La/R \leq 1$ succede quanto segue: Innanzitutto nota che se ogni pacchetto ha dimensione $L$ vuol dire che il nodo impiega $\frac{L}{R}$ secondi per smaltirlo.
+	\item \textbf{(2)} Se $La/R \leq 1$ succede quanto segue: Innanzitutto nota che se ogni pacchetto ha dimensione $L$ vuol dire che il nodo impiega $\frac{L}{R}$ secondi per smaltirlo. Ora ipotizziamo che $N$ pacchetti giungano simultaneamente ogni $N(\frac{L}{R})$ secondi. Se ogni pacchetto viene smaltito ogni $\frac{L}{R}$ secondi, in $N(\frac{L}{R})$ secondi ne vengono smaltiti esattamente $N$. 
 	
-	\begin{itemize}
-		\item \textbf{(2A)} Se $a=1$ vuol dire che $La = L$, ovvero arriva un pacchetto al secondo, ognuno di $L$ bit.
-		Poiché $La/R \leq 1$ allora vuol dire che $L/R \leq 1$ ovvero un pacchetto viene elaborato in al più 1 secondo. Poiché $a = 1$ vuol dire che arriva un pacchetto al secondo e quindi ogni pacchetto trova sempre la coda vuota.
-		
-		Ciò varrebbe anche nel caso in cui $L/R = 1$ perché all'istante 1s il primo pacchetto ha completamente lasciato la coda, e allo stesso istante, il secondo trova la coda vuota.
-			
-		\item \textbf{(2B)} Adesso analizziamo il caso in cui $a > 1$. Nota che se $\frac{L}{R}$ sta ad indicare i secondi necessari per smaltire un pacchetto, $\frac{R}{L}$ sta ad indicare quanti pacchetti sono smaltiti al secondo.
-		
-		Assodato ciò, notiamo che
-		$\frac{La}{R} \leq 1 \rightarrow \frac{L}{R} \leq \frac{1}{a} \rightarrow \frac{R}{L} \geq a$
-		
-		Notiamo che i pacchetti smaltibili ogni secondo sono più dei pacchetti che arrivano ogni secondo (o in egual misura).
-		
-		Una dimostrazione equivalente è notare che se $La/R \leq 1$ allora $R \geq La$ che indica che i bit smaltibili al secondo sono più dei bit in ingresso al secondo (o in egual misura).
-		
-		Ciò implica che:
-		
-		( I ) Ad ogni secondo, il primo degli $a$ pacchetti troverà sempre la coda vuota, come avviene nel caso \textbf{2A} (di cui \textbf{2B} ne è una generalizzazione) e 
-		
-		( II ) Alcuni degli $a - 1$ pacchetti potrebbero non trovare la coda vuota e quindi aspettare. Abbiamo detto che $\frac{L}{R}$ sono i secondi per smaltire un pacchetto. Se gli $a$ pacchetti arrivano con un ritardo temporale di almeno $\frac{L}{R}$ l'uno dall'altro, allora ogni pacchetto troverà la coda vuota, ma se uno o più pacchetti arrivano più velocemente (cosiddetto "burst"), allora sono costretti ad aspettare che il pacchetto (o i pacchetti) precedenti escano dalla coda. Il caso limite è in cui gli $a$ pacchetti arrivino contemporaneamente. In questo caso il primo pacchetto viene immediatamente elaborato, il secondo pacchetto deve aspettare $L/R$ secondi, il terzo deve aspettare $2 * \frac{L}{R}$, il quarto deve aspettare $3 * \frac{L}{R}$ secondi e così via. Più in generale, il pacchetto N° deve aspettare $(N-1) * \frac{L}{R}$.
-		
-		Per rendere più chiaro il concetto facciamo un esempio. Si supponga che arrivino 10 pacchetti all'istante 0 ognuno grande 50bit con una velocità di trasmissione $R$ pari a  1000bit/s. Il primo pacchetto viene elaborato subito, ma il primo bit del secondo pacchetto viene elaborato a tempo $\frac{L}{R} = \frac{50}{1000} = 0.05s$.
-			
-	\end{itemize}
+	In questo caso il primo pacchetto inizia a uscire dalla coda immediatamente, il secondo pacchetto deve aspettare $L/R$ secondi prima che il suo primo bit esca dalla coda, il terzo deve aspettare $2 * \frac{L}{R}$, il quarto deve aspettare $3 * \frac{L}{R}$ secondi e così via. Più in generale, il pacchetto N° deve aspettare $(N-1) * \frac{L}{R}$.
+	
+	Per rendere più chiaro il concetto facciamo un esempio. Si supponga che arrivino 10 pacchetti all'istante 0 ognuno grande 50bit con una velocità di trasmissione $R$ pari a  1000bit/s. Il primo pacchetto inizia a uscire dalla coda subito, ma il primo bit del secondo pacchetto deve aspettare $\frac{L}{R} = \frac{50}{1000} = 0.05s$ prima che l'intero pacchetto precedente sia completamente uscito. Il decimo pacchetto deve aspettare $(9) * 0.05 = 0.45s$ e, nel momento in cui il suo trasferimento sul collegamento sarà terminato, a tempo $0.5$, ne subentrano altri 10, di cui il primo non deve aspettare nulla prima che inizia a essere trasferito.
 
-	Ciò dimostra che sebbene la condizione $La/R \leq 1$ è necessaria per stabilità a lungo termine (la coda non diverge verso $\infty$), non garantisce assenza di attese.
+	Ciò dimostra che la condizione $La/R \leq 1$, non garantisce assenza di attese.
 
 \end{itemize}
 	

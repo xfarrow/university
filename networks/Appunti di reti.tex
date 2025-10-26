@@ -10,6 +10,9 @@
 \usepackage{caption}
 \geometry{a4paper, margin=1in}
 \usepackage{graphicx}
+\usepackage{xcolor}
+% Redefine the caption format to remove "Figure" and the number
+\captionsetup[figure]{labelformat=empty}
 \title{%
 	Reti di calcolatori e internet\\
 	\small Appunti}
@@ -283,11 +286,179 @@ Nelle sezioni precedenti abbiamo dato una panoramica dei servizi che un protocol
 In Internet ci sono due protocolli di trasporto: TCP e UDP.
 
 \subsubsection*{Servizi di TCP}
+TCP prevede un servizio orientato alla connessione e il trasporto affidabile dei dati.
 
+\begin{itemize}
+	\item Servizio orientato alla connessione: TCP fa in modo che client e server si scambino informazioni di controllo prima che i messaggi a livello di applicazione comincino a fluire. Questa procedura, detta handshaking, prepara gli host alla trasmissione dei pacchetti. Dopo la fase di handshaking c'è la vera e propria connessione TCP tra le socket che è full-duplex, ovvero possono scambiarsi contemporaneamente messaggi. L'applicazione deve chiudere la connessione quando termina di inviare messaggi.
+	
+	\item Servizio di trasferimento affidabile: i processi comunicanti possono contare su TCP per trasportare dati senza errori e nel giusto ordine.
+\end{itemize}
 
+TCP prevede anche un meccanismo di controllo della congestione che beneficia l'intero Internet, non solo i processi comunicanti.
 
+\subsubsection*{Servizi di UDP}
+UDP è un protocollo di trasporto leggero senza connessione e dunque non necessita di handshaking. Non offre alcun tipo di affidabilità: il protocollo non garantisce che un certo messaggio arrivi al destinatario, e se lo fanno, potrebbero non giungere in ordine. Non include neanche un meccanismo di controllo della congestione.
 
+\subsubsection*{Servizi non forniti dai protocolli di trasporto di Internet}
+Garanzie di throughput e temporizzazione non sono forniti dagli odierni protocolli di trasporto di Internet.
 
+\subsection*{2.1.5 Protocolli a livello di applicazione}
+Un protocollo a livello di applicazione definisce come i processi di un'applicazione, in esecuzione su sistemi periferici diversi, si scambiano messaggi.
+
+Un protocollo a livello di applicazione definisce:
+\begin{itemize}
+	\item I tipi di messaggio scambiati (es. richiesta o risposta)
+	\item La sintassi dei messaggi
+	\item La semantica dei messaggi
+	\item Le regole per determinare quando e come un processo invia e risponde ai messaggi
+\end{itemize}
+
+È importante distinguere tra applicazioni di rete e protocolli a livello di applicazioni di rete. Un protocollo è solo una parte di un'applicazione. Il Web è un'applicazione di rete che consiste in uno standard per i formati dei documenti, il browser, il web server e infine il protocollo a livello di applicaione: HTTP.
+
+\section*{2.2 Web e HTTP}
+\subsection*{2.2.1 Panoramica di HTTP}
+HTTP è un protocollo a livello di applicazione del Web. Questo protocollo è implementato in due programmi: client e server.
+
+Una pagina Web, detta anche documento, è costituita da oggetti. Un oggetto è semplicemente un file (es. una pagina HTML o un'immagine) indirizzabile tramite URL. La maggior parte delle pagine web consiste in un file HTML principale e diversi oggetti referenziati da esso.
+
+Ogni URL ha almeno due componenti: il nome dell'host del server che ospita l'oggetto e il percorso dell'oggetto.
+
+$$\underbrace{www.school.edu}_{Nome\ dell'host}/\underbrace{chemistry/lesson1.jpg}_{percorso\ dell'oggetto}$$
+
+Un browser implementa il lato client di HTTP e un web server implementa il lato server di HTTP che ospita oggetti web indirizzabili tramite URL.
+
+HTTP definisce in che modo i client web richiedono le pagine ai web server e come quest'ultimi le trasferiscono ai client.
+
+HTTP utilizza TCP come protocollo di trasporto. In questo modo HTTP non si deve preoccupare dei dati smarriti, di perdite e riordinamento dei pacchetti.
+
+Il client invia richieste e riceve risposte HTTP tramite la propria interfaccia socket. Analogamente, il server riceve richieste e invia risposte tramite la propria interfaccia socket.
+
+Il server invia i file richiesti al client senza memorizzare alcune informazione di stato a proposito del client. Per questo motivo viene detto protocollo senza memoria di stato (stateless).
+
+\subsection*{2.2.2 Connessioni persistenti e non persistenti}
+Ciascuna coppia richiesta/risposta deve essere inviata su una connessione TCP separata o devono essere inviate tutte sulla stessa connessione? Nel primo caso si dice che l'applicazione usa connessioni non persistenti, nel secondo caso usa connessioni persistenti.
+
+\subsubsection*{HTTP con connessioni non persistenti}
+Ecco cosa avviene quando HTTP usa connessioni non persistenti, supponendo che il client chieda la seguente pagina Web: www.school.edu/chemistry/index.html
+\begin{enumerate}
+	\item Il processo client HTTP inizializza una connessione TCP con il server sulla porta 80.
+	\item Il client HTTP invia al server un messaggio di richiesta che include il percorso /chemistry/index.html
+	\item Il processo server recupera l'oggetto /chemistry/index.html, lo incapsula in un messaggio HTTP e viene inviato al client attraverso la socket
+	\item Quando il server si è assicurato che il messaggio è arrivato alla destinazione, comunica a TCP di chiudere la connessione.
+	\item Il client riceve il messaggio di risposta e la connessione TCP termina
+\end{enumerate}
+
+Come abbiamo visto, ciascuna connessione TCP trasporta solo un messaggio di richiesta e uno di risposta. Se la pagina index.html avesse contenuto 10 oggetti al suo interno, avrebbe generato 11 connessioni TCP, ognuna per ciasun oggetto.
+
+Definiamo essere Round Trip Time (RTT) il tempo che intercorre tra l'invio di un pacchetto e la ricezione della risposta. Quando il client vuole ottenere una risorsa, apre una connessione TCP con il server il quale risponde con una conferma. Il tempo per fare ciò è RTT. Dopodiché il client manda un messaggio al server che contiene (1) a sua volta una conferma di avvenuta ricezione e (2) la richiesta HTTP della risorsa. A questo punto il server risponde con il file HTML. Il tempo per fare ciò è un altro RTT.
+
+Il processo richiede 2 RTT (prima fase e seconda fase) + il tempo per trasfrerire la pagina HTML (tempo non trascurabile).
+
+\subsubsection{HTTP con connesioni persistenti}
+Le connessioni non persistenti presentano alcuni limiti: il primo è che per ogni oggetto richiesto occorre stabilire e mantenere una nuova connessione. In secondo luogo ciascun oggetto subisce un ritardo di 2 RTT. Il primo per stabilire la connessione TCP il secondo per richiedere e ricevere un oggetto.
+
+Con HTTP a connessione persistente il server lascia la connessione TCP aperta dopo l'invio di una risposta, per cui le richieste e le risposte successive useranno la stessa connessione. In questo modo il server può anche spedire più oggetti contemporaneamente. Le richieste possono infatti essere fatte una di seguito all'altra senza aspettare prima il completamento delle richieste precedenti (pipelining). Il server HTTP chiude la connessione TCP quando essa rimane inattiva per un dato lasso di tempo. La modalità di default di HTTP impiega connessioni persistenti con pipelinig.
+
+\subsection*{2.2.3 Formato dei messaggi HTTP}
+Le specifiche HTTP includono la definizione dei due formati HTTP: richiesta e risposta.
+
+\subsubsection*{Messaggio di richiesta HTTP}
+Un messaggio di richiesta HTTP è
+\\ \\
+\texttt{GET /somedir/index.html HTTP/1.1 \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{Host: www.school.edu \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{Connection: close \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{User-agent: Mozilla/5.0 \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{Accept-language: it \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+
+Notiamo fin da subito che il testo è scritto in codifica ASCII. Consiste di righe, ognuna delle quali con dei ritorni a capo. Un messaggio di richiesta può essere costituito da un numero indefinito di righe, anche una sola (la prima è obbligatoria). La prima riga è definita riga di richiesta mentre le altre sono righe di intestazione (header).
+
+\begin{itemize}
+	\item La prima riga presenta tre campi: il campo metodo, il campo URL e il campo versione di HTTP. Il campo metodo è GET quando viene richiesto un oggetto, POST quando l'utente riempie un form (l'utente sta ancora richiedendo una pagina web al server, ma i contenuti specifici della pagina dipendono da ciò che l'utente ha inserito). Si può usare GET anche per riempire un form, includendo i dati nell'URL (query string). Poi vi è il metodo HEAD, e quando un server riceve un metodo di questo tipo risponde ma tralascia gli oggetti richiesti. PUT consente di inviare un oggetto a un percorso specifico e DELETE permette di cancellare un oggetto su un server. Nota: queste sono solo convenzioni.
+	\item Host specifica l'host su cui risiede l'oggetto. Si potrebbe pensare sia seperflua dato che già in corso una connessione TCP con l'host ma quest'informazione serve per la cache dei proxy
+	\item Con la terza linea il browswer specifica che vuole che il server chiuda la connessione dopo aver inviato l'oggetto richiesto.
+	\item User-agent specifica quale browser sta effettuando la richiesta
+	\item Accept-language specifica la lingua richiesta.
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/http_request_message.png}
+	\caption{Formato generale dei messaggi di richiesta HTTP}
+	\label{fig:esempio}
+\end{figure}
+
+Il corpo è (solitamente, per convenzione) vuoto nelle richieste GET.
+
+\subsubsection*{Messaggio di risposta HTTP}
+Un esempio di messaggio di risposta HTTP è
+\\\\
+\texttt{HTTP/1.1 200 OK}\\
+\texttt{Connection: close}\\
+\texttt{Date: 18 Aug 2025}\\
+\texttt{Server: Apache}
+\texttt{Last-Modified: 11 Jun 2025}
+\texttt{Content-Length: 3145}\\
+\texttt{Content-Type: text/html}\\
+\texttt{<html>...</head>}\\
+
+Troviamo la riga di intestazione, un numero variabile di intestazioni e il corpo.
+
+\begin{itemize}
+	\item La riga di stato presenta tre campi: la versione del protocollo, un codice di stato e un messaggio relativo al codice di stato
+	\item Connection: close sta ad indicare che il server ha intenzione di chiudere la connessione TCP dopo l'invio del messaggio
+	\item Date indica la data di invio del messaggio
+	\item Server indica il tipo di server che sta fornendo il messaggio
+	\item Last-Modified indica quando l'oggetto è stato modificato per l'ultima volta
+	\item Content-Length indica quanti byte è il corpo
+	\item Content-Type indica il tipo del corpo, in questo caso un file HTML.
+\end{itemize}
+
+\subsection*{2.2.4 Interazione utente-server: i cookie}
+Abbiamo detto che HTTP è stateless. Tuttavia, è spesso auspicabile che i web server possano tener traccia degli utenti per limitare l'accesso ad alcune pagine a taluni o per fornire contenuti in funzione della loro identità.
+
+A questo scopo HTTP adotta i cookie, che consentono ai server di tener traccia degli utenti.
+
+Per poter utilizzare i cookie sono necessari 4 componenti:
+\begin{itemize}
+	\item Una riga di intestazione nel messaggio di risposta
+	\item Una riga di intestazione nel messaggio di richiesta
+	\item Un file mantenuto sul sistema dell'utente gestito dal browser
+	\item Un database sul server
+\end{itemize}
+
+Il server crea un identificativo univoco e lo inserisce all'interno del proprio database. A questo punto il server risponde al browser inserendo nel messaggio HTTP un header chiamato Set-cookie che contiene il numero identificativo. Quando il browser riceve il messaggio, aggiunge una riga nel proprio file. Questa riga contiene il nome del server e il numero identificativo.
+
+Ogni volta che l'utente richiede una pagina web, il suo browser consulta il suo file dei cookie, estrae il suo numero identificativo per il sito e lo pone nella richiesta HTTP. In tal modo il server può monitorare l'attività dell'utente nel sito.
+
+\subsection*{2.2.5 Web caching}
+Una web cache è un'entità di rete che soddisfa richieste HTTP al posto del web server effettivo. Il proxy ha una propria memoria in cui conserva copie di oggetti recentemente richiesti.
+
+Ecco cosa succede:
+\begin{enumerate}
+	\item Il browser stabilisce una connessione TCP con il proxy serber e gli invia una richiesta HTTP per l'oggetto specificato.
+	\item Il proxy controlla la presenza di una copia dell'oggetto memorizzato localmente. Se l'oggetto viene rilevato, il proxy lo inoltra al client
+	\item Se la cache non dispone dell'oggetto, apre una connessione con il server di origine, richiedendo l'oggetto in questione. Il server gli risponde
+	\item Il proxy salva l'oggetto nella propria cache e lo manda al client.
+\end{enumerate}
+
+Il proxy è contemporaneamente sia client che server a seconda dei casi.
+
+I proxy possono (1) ridurre i tempi di risposta ai client e (2) riducono il carico dei web server e dei loro collegamenti. Ciò implica che l'intero Internet ne trae beneficio.
+
+\subsection*{GET condizionale}
+L'oggetto ospitato nel web server potrebbe essere stato modificato rispetto alla copia presente nel proxy. HTTP presenta un meccanismo che permette alla cache di verificare se i suoi oggetti sono aggiornati. Questo meccanismo è chiamato GET condizionle.
+
+Un messaggio di richiesta HTTP viene chiamato messaggio di GET condizionale se (1) usa il metodo GET e (2) include una riga di intestazione If-modified-since.
+
+Vediamone il funzionamento:
+\begin{enumerate}
+	\item Un proxy invia un messaggio di richiesta a un web server per conto di un browser richiedente
+	\item In cache memorizza sia l'oggetto che la data di ultima modifica presente nell'intestazione Last-Modified
+	\item Se dopo un certo periodo di tempo un client richiede la stessa risorsa, la cache non può rispondere direttamente con quella che ha in memoria perché potrebbe essere stata modificata. Allora la cache effettua un controllo di aggiornamento inviando una GET condizionale al server, specificando nell'header If-modified-since la data che ha in memoria precedentemente prelevata dall'header Last-Modified. Questo comunica al server di inviare l'oggetto solo se è stato modificato rispetto alla data specificata
+	\item Se è stato modificato, il server risponde con un messaggio HTTP normale compreso di oggetto. Altrimenti manda un messaggio HTTP con corpo vuoto (per non sovraccaricare inutilmente la banda) con messaggio di stato 304 Not Modified che comunica al proxy che può procedere a inoltrare al client la copia dell'oggetto presente in cache
+	\item 
+\end{enumerate}
 
 
 \end{document}

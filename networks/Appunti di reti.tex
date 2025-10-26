@@ -280,7 +280,7 @@ Un protocollo a livello di trasporto potrebbe anche fornire garanzie di temporiz
 \subsubsection*{Sicurezza}
 Un protocollo a livello di trasporto può fornire a un'applicazione servizi di sicurezza, per esempio cifratura e decifratura dei dati così come integrità e autenticazione.
 
-\subsection{2.1.4 Servizi di trasporto offerti da internet}
+\subsection*{2.1.4 Servizi di trasporto offerti da internet}
 Nelle sezioni precedenti abbiamo dato una panoramica dei servizi che un protocollo a libello di trasporto potrebbe fornire in teoria, ma Internet non fornisce tutti e 4.
 
 In Internet ci sono due protocolli di trasporto: TCP e UDP.
@@ -453,12 +453,277 @@ Un messaggio di richiesta HTTP viene chiamato messaggio di GET condizionale se (
 
 Vediamone il funzionamento:
 \begin{enumerate}
-	\item Un proxy invia un messaggio di richiesta a un web server per conto di un browser richiedente
+	\item Un proxy invia un messaggio di richiesta a un web server per conto di un browser richiedente, il quale gli risponde.
 	\item In cache memorizza sia l'oggetto che la data di ultima modifica presente nell'intestazione Last-Modified
-	\item Se dopo un certo periodo di tempo un client richiede la stessa risorsa, la cache non può rispondere direttamente con quella che ha in memoria perché potrebbe essere stata modificata. Allora la cache effettua un controllo di aggiornamento inviando una GET condizionale al server, specificando nell'header If-modified-since la data che ha in memoria precedentemente prelevata dall'header Last-Modified. Questo comunica al server di inviare l'oggetto solo se è stato modificato rispetto alla data specificata
-	\item Se è stato modificato, il server risponde con un messaggio HTTP normale compreso di oggetto. Altrimenti manda un messaggio HTTP con corpo vuoto (per non sovraccaricare inutilmente la banda) con messaggio di stato 304 Not Modified che comunica al proxy che può procedere a inoltrare al client la copia dell'oggetto presente in cache
-	\item 
+	\item Se dopo un certo periodo di tempo un client richiede la stessa risorsa, la cache non può rispondere direttamente con quella che ha in memoria perché potrebbe essere stata modificata sul server originale. Allora la cache effettua un controllo di aggiornamento inviando una GET condizionale al server, specificando nell'header If-modified-since la data che ha in memoria precedentemente prelevata dall'header Last-Modified. Questo comunica al server di inviare l'oggetto solo se è stato modificato rispetto alla data specificata
+	\item Se è stato modificato, il server risponde con un messaggio HTTP normale compreso di oggetto e la cache aggiorna il valore di ultima modifica. Altrimenti manda un messaggio HTTP con corpo vuoto (per non sovraccaricare inutilmente la banda) con messaggio di stato 304 Not Modified che comunica al proxy che può procedere a inoltrare al client la copia dell'oggetto presente in cache
 \end{enumerate}
+
+\section*{2.3 Posta elettronica in Internet}
+L'email rappresenta un mezzo di comunicazione asincrono.
+
+L'email è composta da tre elementi principali: gli user agent (i programmi di posta), i server di posta e i protocolli quali SMTP, POP e IMAP.
+
+Quando il mittente ha finito di comporre un messaggio, il suo user agent  lo invia al suo server di posta. Se il destinatario ha un altro server di posta, il primo manda il messaggio al secondo. Infine, l'user agent del destinatario recupera il messaggio dal suo server di posta. Ogni utente ha una casella di posta (uno spazio a lui dedicato) su un server di posta su cui vengono depositate le mail a lui indirizzate.
+
+Se il server del mittente non può consegnare la posta a quello del destinatario, la trattiene in una coda dei messaggi e riprova l'invio diverse volte. Dopo averci provato più volte e ogni volta l'invio fallisce, il server del mittente comunica al mittente la mancata consegna.
+
+SMTP presenta il principale protocollo a livello di applicazione per la posta elettronica. Fa uso del protocollo TCP sulla porta assegnata numero 25. Esso presenta un lato client e un lato server. Un server di posta può agire sia da client che da server SMTP: quando la invia agisce come client, quando la riceve agisce come server.
+
+\subsection*{2.3.1 SMTP}
+SMTP trasferisce i messaggi dall'user agent del mittente al proprio server, nonché dal server del mitente a quello del destinatario.
+
+Vediamo cosa accade nel dettaglio:
+\begin{enumerate}
+	\item Il mittente invoca il proprio user agent per la posta elettronica, fornisce l'indirizzo di posta del destinatario, compone il messaggio e dà istruzione allo user agent di inviare il messaggio.
+	
+	\item Lo user agent invia il messaggio al proprio server di posta tramite SMTP (vedremo più avanti che potrebbe usare anche HTTP)
+	
+	\item Il lato client di SMTP, eseguito sul server mittente, apre una connessione TCP verso il server SMTP in esecuzione sul mail server del destinatario (se questi usa un server diverso da quello del mittente)
+	
+	\item Il client SMTP (sul server mittente) invia il messaggio al server SMTP (server ricevente)
+	
+	\item Il server SMTP del ricevente pone il messaggio nella casella del destinatario
+	
+	\item Il destinatario, quando lo ritiene opportuno, invoca il proprio user agent per leggere il messaggio (usando POP, IMAP o HTTP che vedremo più avanti)
+\end{enumerate}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/SMTP_example.png}
+	\caption{Esempio di funzionamento}
+	\label{fig:esempio}
+\end{figure}
+
+Il client (o i client) riusano la stessa connessione TCP se hanno altri messaggi da inviare al server, pertanto, SMTP fa uso di connessioni persistenti.
+
+\subsection*{2.3.2 Confronto con HTTP}
+HTTP trasferisce i file da un web server a un web client, mentre SMTP trasferisce messaggi di posta elettronica da un mail server a un altro.
+
+Sia HTTP standard che SMTP fanno uso di connessioni persistenti.
+
+Una differenza sostanziale è che HTTP è un protocollo di tipo pull, ovvero il client "tira" le informazioni del server a sè. In altre parole chi instaura la connessione è la macchina che vuole ricevere il file. Al contrario SMTP è un protocollo di tipo push, ovvero il client "spinge" le informazioni al server. In altre parole, la connessione TCP viene inizializzata dall'host che vuole spedire i file.
+
+Un'altra differenza è che SMTP obbliga l'intero messaggio a essere codificato in ASCII a 7 bit mentre HTTP non pone tale restrizione.
+
+\subsection*{2.3.3 Formati dei messaggi di posta}
+Il corpo dei messaggi di posta è preceduto da degli header.
+Queste righe contengono testo leggibile, costituito da una parola chiave, seguita da due punti a loro volta seguiti da un valore (esempio: Subject: this is an email). Alcune di queste righe sono obbligatorie, come From e To. Attenzione a non confondersi tra i "From/To" dei messaggi SMTP e i "From/To" degli header di messaggio.
+
+\subsection*{2.3.4 Protocolli di accesso alla posta}
+Quando SMTP consegna il messaggio alla casella del destinatario, come fa quest'ultimo a recuperare il messaggio? 
+
+Verrebbe quasi naturale rispondere "posizioniamo un server SMTP presso il computer del destinatario", ma con questo approccio il computer del destinatario dovrebbe rimanere sempre acceso e connesso a Internet al fine di ricevere la posta. Ciò non è raccomandabile, pertanto si preferisce che l'utente acceda alla propria posta che risiede sul server quando e come egli vuole. Si noti che non possiamo usare SMTP qui in quanto esso è un protocollo push mentre in questo caso servirebbe un protocollo pull.
+
+Ebbene, si usano dei protocolli per richiedere e trasferire la posta dal server al client. I principali sono POP3, IMAP e HTTP.
+
+Ricapitolando, SMTP è usato per trasferire posta dallo user agent del mittente al proprio server di posta ed è usato per trasferire la posta dal server mittente al server destinatario, ma per trasferire la posta dal server destinatario al suo user agent è necessario un protocollo di accesso alla posta.
+
+\subsubsection*{POP3}
+POP3 entra in azione quando lo user agent (il client), apre una connessione TCP verso il mail server sulla porta 110. POP3 procede in tre fasi: autorizzazione, transazione e aggiornamento.
+
+Durante la prima fase lo user agent invia nome utente e password.
+
+Durante la seconda fase lo user agent recupera i messaggi e può marcarne alcuni (anche quelli non scaricati) come da eliminare.
+
+La fase di aggiornamento ha luogo quando il client conclude la sessione e in questo istante il server elimina i messaggi che sono stati marcati come da eliminare.
+
+Uno user agent che usa POP3 può essere configurato dall'utente per "scaricare e cancellare" o per "scaricare e mantenere". Nella modalità scarica e cancella, come suggerisce il nome, il client dice al server di cancellare tutte le mail che ha scaricato. Se ciò avviene, il destinatario non può visualizzare i messaggi da un altro dispositivo.
+
+\subsubsection*{IMAP}
+Con l'accesso tramite POP3, dopo aver scaricato i messaggi sulla macchina locale, l'utente può creare cartelle nelle quali inserire i messaggi. Questo paradigma pone però problemi per gli utenti mobili in quanto la struttura delle directory non si muove insieme a loro. Serve allora un modo per mantenere la gerarchia delle cartelle sul server alla quale si può accedere da diversi calcolatori.
+
+Per risolvere questo e altri problemi viene in soccorso il protocollo IMAP. Un server che adotta il protocollo IMAP associa ogni messaggio arrivato al server in una cartella. L'utente può crearne di altre e spostare i messaggi al loro interno. IMAP fornisce anche comani per consentire agli utenti di effettuare ricerche in cartelle remote. Un'altra caratteristica è che consente di scaricare solo singole parti dei messaggi.
+
+\subsubsection*{Posta basata sul Web}
+Al giorno d'oggi gli utenti possono inviano e leggono posta su un browser Web. In questo caso lo user agent è un browser web e l'utente comunica con il proprio server web via HTTP.
+
+In ogni caso, anche se gli utenti finali comunicano con i loro server via HTTP, i server tra di loro comunicano via SMTP.
+
+\section*{2.4 DNS: il servizio di directory di Internet}
+Gli host di internet possono essere identificati possono essere indentificati in due modi: tramite il nome host (es. www.eff.org), che sono facili da ricordare per le persone ma non adatti per un sistema di routing e tramite indirizzo IP, difficili da ricordare ma adatto per il sistema di routing in quanto otteniamo informazioni più dettagliate all'interno del collocamento della macchina ad esso associato.
+
+Ogni indirizzo IP è formato da 4 byte con un punto che divide ogni byte espresso in decimale da 0 a 255 (es. 192.168.10.255). Gli indirizzi IP sono gerarchici perché leggendoli da sinistra verso destra otteniamo informazioni sempre più specifiche sulla collocazione dell'host all'interno di Internet.
+
+\subsection*{2.4.1 Servizi forniti da DNS}
+Come poc'anzi anticipato, le persone prediligono usare un nome host mentre i router prediligono usare un indirizzo IP.
+
+Al fine di conciliare i due approcci, ovvero far usare alle persone l'hostname e ai router l'indirizzo IP, è necessario un servizio che sia in grado di tradurre i nomi degli host nei loro indirizzi IP. Si tratta del compito del DNS. DNS è (1) un database distribuito e (2) un protocollo a livello di applicazione che consente agli host di interrogare il database.
+
+Il DNS usa UDP sulla porta 53 e viene comunemente utilizzato da altri protocolli a livello di applicazione come HTTP e SMTP.
+
+Questo è il funzionamento quando si richiede una pagina Web:
+\begin{enumerate}
+	\item Il browser estrae il nome dell'host dall'URL e lo passa al lato client dell'applicazione DNS
+	\item Il client DNS invia un'interrogazione contenente l'hostname a un server DNS
+	\item Il client riceve una risposta che include l'indirizzo IP corrispondente all'hostname
+	\item Una volta ricevuto l'indirizzo IP dal DNS, il browser dò inizio a una connessione TCP sulla porta 80 a quell'indirizzo
+\end{enumerate}
+
+Pertanto, il sistema DNS aggiunge un ritardo aggiuntivo alle applicazioni Internet che lo utilizzano.
+
+Oltre alla traduzione degli hostname in indirizzi IP, il DNS mette a disposizione altri servizi:
+\begin{itemize}
+	\item Host aliasing: Un host dal nome complicato (hostname canonico) può avere uno o più sinonimi (alias). Il DNS può essere invocato per ottenere l'hostname canonico da un alias
+	\item Mail server aliasing: UGUALE AL PRIMO???
+	\item Distribuzione del carico di rete: I siti con molto traffico vengono replicati su più server, ognuno eseguito su un host diverso con un indirizzo IP diverso. Viene dunque associato un hostname a un INSIEME di indirizzi IP. Quando un client effettua una query per questo hostname, il server risponde con l'intero insieme di indirizzi, ma di volta in volta stravolgendone l'ordine. Dato che generalmente un client invia il suo messaggio al primo indirizzo IP elencato, ciò contribuisce a distribuire il traffico su server replicati.
+\end{itemize}
+
+\subsection*{2.4.2 Panoramica del funzionamento di DNS}
+Tutte le query DNS e i messaggi di risposta vengono inviati all'interno di datagrammi UDP alla porta 53. Il client DNS sull'host riceve un messaggio di risposta contenente la corrispondenza desiderata che viene inoltrata all'applicazione che ne ha fatto richiesta. Pertanto, dal punto di vista dell'applicazione, la risoluzione dell'hostname è una scatola nera.
+
+Per implementare il servizio DNS un primo approccio potrebbe essere quello di creare un DNS server contenente tutte le corrispondenze. Ciò sarebbe inappropriato per i seguenti motivi: un solo punto di fallimento, volume di traffico spropositato per un solo nodo, database geograficamente distante e manutenzione (dovrebbe essere aggiornato frequentemente per tener conto di ogni nuovo host).
+
+\subsubsection*{Un database distribuito e gerarchico}
+In realtà il servizio DNS utilizza un gran numero di server, organizzati in maniera gerarchica e distribuiti. Nessun DNS server ha tutte le corrispondenze per tutti gli host di Internet. Questa gerarchia consiste di tre classi di DNS server: i root server, i top-level domain server e i server autoritativi.
+
+Immaginiamo un client che voglia raggiungere www.eff.org. Esso dapprima contatta uno dei root server che gli restituisce uno o più indirizzi IP di server DNS relativi al TLD .org, che a sua volta gli restituisce uno o più server DNS autoritativi per eff.org. A questo punto quest'ultimo restituisce l'indirizzo IP dell'hostname www.eff.org.
+
+Esaminiamo più in dettaglio le varie classi di server DNS:
+\begin{itemize}
+	\item Root server: ne sono circa 400 in tutto il mondo e forniscono gli indirizzi IP dei TLD DNS Server
+	\item TLD server: Questi server si occupano dei domini di primo livello quali org, com, edu, it, fr ecc. Questi forniscono gli indirizzi IP dei server autoritativi
+	\item Server autoritativi: Ogni organizzazione dotata di host pubblicamente accessibili su Internet deve fornire record DNS pubblicamente accessibili che associno i nomi di tali host a indirizzi IP.
+\end{itemize}
+
+Esiste un altro tipo di server DNS detto DNS server locale, che non appartiene alla gerarchia di server sopra descritta. Ciascun ISP ha un proprio DNS server locale, fornito ai clienti che vi si connettono. Quando un host effettua una richiesta DNS, la query viene inviata al DNS server locale, che opera da proxy e inoltra la query alla gerarchia DNS.
+
+Il funzionamento per risolvere www.domain.it è il seguente:
+\begin{enumerate}
+	\item L'utente invia una richiesta DNS al server locale
+	\item Il server locale inoltra la query al root server, che, vedendo che il TLD è .it, risponde con uno o più indirizzi IP appartenenti ai TLD server inerenti .it
+	\item Il server locale, dunque, invia la richiesta a uno dei TLD server che risponde con uno o più indirizzi IP di DNS server autoritativo per domain.it
+	\item Il DNS server locale, annotato ciò, invia la richiesta a uno di questi, il quale risponde con l'indirizzo IP dell'hostname finale
+	\item Il DNS server locale inoltra questa informazione all'host richiedente.
+\end{enumerate}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/dns_query_example.png}
+	\caption{Esempio di funzionamento}
+	\label{fig:esempio}
+\end{figure}
+
+
+In questo esempio si fa uso sia di query ricorsive che di query iterative. La richiesta effettuata dal client al DNS server locale è ricorsiva in quanto il client chiede a quest'ultimo di ottenere l'associazione dell'hostname (cioè non rimbalza al client un risultato intermedio che ha trovato). Tutte le altre richieste sono iterative in quanto server A chiede a B di risolvere solo una parte dell'hostname. Server B gli risponde e sarà compito di A procedere nella ricerca. Ogni richiesta DNS può essere o iterativa o ricorsiva.
+
+\subsubsection*{DNS caching}
+In una concatenazione di richieste il server DNS che riceve una risposta da un altro server DNS può mettere in cache le informazioni ricevute, in modo che possa rispondere senza interrogare altri server e conseguentemente incrementare i ritardi. Dopo un determinato periodo di tempo i server DNS svuotano l'informazione ricevuta. Ad esempio un DNS server locale può memorizzare in cache l'indirizzo IP dei TLD DNS server, aggirando la richiesta ai root DNS server.
+
+\subsection*{2.4.3 Record e messaggi DNS}
+Il database DNS contiene i cosiddetti resource record, che sono restituiti alle richieste DNS.
+
+
+Un record di risorsa contiene i seguenti campi: (Name, Value, Type, TTL).
+
+Il TTL è il time to live e indica quanto tempo residuo in cache prima di essere rimosso. Il significato di Name e Value dipende da Type.
+\begin{itemize}
+	\item Se Type=A allora Name è il nome dell'host e Value è il suo indirizzo IP. Pertando un record di tipo A fornisce la corrispondenza tra hostname e indirizzo IP
+	\item Se Type=NS allora Name è un dominio e Value è l'hostname del DNS server autoritativo [ma non era un IP???]
+	\item Se Type=CNAME allora Name è l'alias e Value è il nome canonico
+	\item Se Type=MX allota Value è il nome canonico di un mail server che ha Name come alias (???? allora è uguale a CNAME ????)
+\end{itemize}
+
+Ogni server DNS autoritativo contiene un record A per un certo hostname ma anche un altro tipo di server DNS può contenere record A nella propria cache.
+
+\subsubsection*{Messaggi DNS}
+Sia le query che le risposte hanno lo stesso formato
+\textbf{DA COMPLETARE}
+
+\subsubsection*{Inserimento di un record nel database DNS}
+Come vengono inseriti i record nel database DNS? Un utente che vuole registrare un nome di dominio deve rivolgersi presso un registrar che si occupa di verificare l'unicità del nome di dominio e di inserirlo nel database DNS. Quando l'utente registra un nome di dominio presso un registrar bisogna fornirgli anche i nomi e gli indirizzi IP dei DNS server autoritativi.
+
+Fino a poco tempo fa i contenuti di ciascun server DNS venivano inseriti in maniera statica per mezzo di un file di confiurazione. Con le nuove versioni del protocollo DNS è stata aggiunta l'opzione UPDATE per consentire l'aggiunta o la cancellazione dinamica dei dati del database attraverso messaggi DNS.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \end{document}

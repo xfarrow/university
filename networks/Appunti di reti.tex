@@ -11,6 +11,7 @@
 \geometry{a4paper, margin=1in}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\renewcommand{\contentsname}{Indice}
 % Redefine the caption format to remove "Figure" and the number
 \captionsetup[figure]{labelformat=empty}
 \title{%
@@ -26,6 +27,8 @@
 	
 \chapter*{Introduzione}
 Questi appunti, presi dal libro "Reti di Calcolatori e Internet - un approccio Top Down" (Kurose, Ross, 7th edition) sono parziali in quanto una parte sono presi a penna. La numerazione dei capitoli, sezioni e paragrafi segue quella del libro.
+
+\tableofcontents %indice
 		
 \chapter{Reti di calcolatori e Internet}
 	
@@ -228,7 +231,7 @@ Quindi a ciascun livello il pacchetto ha due tipi di campi: quello di intestazio
 Le applicazioni sono la ragion d'essere delle reti di calcolatori. Senza di esse predisporre una rete sarebbe inutile.
 
 \section*{2.1 Principi delle applicazioni di rete}
-I programmi che fanno uso del livello Applicazione sono eseguiti sui sistemi periferici che comunicano tra loro via rete. Esempi di programmi sono i browser e i web server. I programmatori delle applicazioni a livello di rete non hanno bisogno di scrivere software che viene eseguito sui commutatori
+I programmi che fanno uso del livello Applicazione sono eseguiti sui sistemi periferici che comunicano tra loro via rete. Esempi di programmi sono i browser e i web server. I programmatori delle applicazioni non hanno bisogno di scrivere software che viene eseguito sui commutatori
 
 \subsection*{2.1.1 Architettura delle applicazioni di rete}
 Per lo sviluppatore di applicazioni l'architettura di rete è fissa e fornisce alle applicazioni uno specifico insieme di servizi. Il compito dello sviluppatore è progettare l'applicazione. Egli deve scegliere tra utilizzare l'architettura client-server o P2P (peer-to-peer).
@@ -365,11 +368,11 @@ Le specifiche HTTP includono la definizione dei due formati HTTP: richiesta e ri
 \subsubsection*{Messaggio di richiesta HTTP}
 Un messaggio di richiesta HTTP è
 \\ \\
-\texttt{GET /somedir/index.html HTTP/1.1 \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
-\texttt{Host: www.school.edu \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
-\texttt{Connection: close \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
-\texttt{User-agent: Mozilla/5.0 \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
-\texttt{Accept-language: it \textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{GET /somedir/index.html HTTP/1.1\textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{Host: www.school.edu\textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{Connection: close\textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{User-agent: Mozilla/5.0\textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
+\texttt{Accept-language: it\textcolor{olive}{\textbackslash{r}\textbackslash{n}}}\\
 
 Notiamo fin da subito che il testo è scritto in codifica ASCII. Consiste di righe, ognuna delle quali con dei ritorni a capo. Un messaggio di richiesta può essere costituito da un numero indefinito di righe, anche una sola (la prima è obbligatoria). La prima riga è definita riga di richiesta mentre le altre sono righe di intestazione (header).
 
@@ -396,13 +399,13 @@ Un esempio di messaggio di risposta HTTP è
 \texttt{HTTP/1.1 200 OK}\\
 \texttt{Connection: close}\\
 \texttt{Date: 18 Aug 2025}\\
-\texttt{Server: Apache}
-\texttt{Last-Modified: 11 Jun 2025}
+\texttt{Server: Apache}\\
+\texttt{Last-Modified: 11 Jun 2025}\\
 \texttt{Content-Length: 3145}\\
 \texttt{Content-Type: text/html}\\
 \texttt{<html>...</head>}\\
 
-Troviamo la riga di intestazione, un numero variabile di intestazioni e il corpo.
+Qui per prevità abbiamo omesso i caratteri di carriage return e new line Troviamo la riga di intestazione, un numero variabile di intestazioni e il corpo.
 
 \begin{itemize}
 	\item La riga di stato presenta tre campi: la versione del protocollo, un codice di stato e un messaggio relativo al codice di stato

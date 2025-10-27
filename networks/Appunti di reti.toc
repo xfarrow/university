@@ -1,0 +1,21 @@
+\contentsline {chapter}{\numberline {1}Reti di calcolatori e Internet}{7}{}%
+\contentsline {subsubsection}{Multiplexing nelle reti a commutazione di circuito}{7}{}%
+\contentsline {subsubsection}{Confronto tra commutazione di pacchetto e commutazione di circuito}{7}{}%
+\contentsline {subsubsection}{Ritardo di elaborazione}{8}{}%
+\contentsline {subsubsection}{Ritardo di accodamento}{8}{}%
+\contentsline {subsubsection}{Ritardo di trasmissione}{8}{}%
+\contentsline {subsubsection}{Ritardo di propagazione}{8}{}%
+\contentsline {subsubsection}{Confronto tra ritardi di trasmissione e di propagazione}{8}{}%
+\contentsline {subsubsection}{Formula}{9}{}%
+\contentsline {subsubsection}{Perdita di pacchetti}{9}{}%
+\contentsline {subsubsection}{1.4.3 Ritardo end to end}{9}{}%
+\contentsline {subsubsection}{Traceroute}{10}{}%
+\contentsline {subsubsection}{Sistemi periferici, applicazioni e altri ritardi}{10}{}%
+\contentsline {subsubsection}{Stratificazione dei protocolli}{10}{}%
+\contentsline {subsubsection}{Livello di applicazione}{11}{}%
+\contentsline {subsubsection}{Livello di trasporto}{11}{}%
+\contentsline {subsubsection}{Livello di rete}{11}{}%
+\contentsline {subsubsection}{Livello di collegamento}{11}{}%
+\contentsline {subsubsection}{Livello fisico}{11}{}%
+\contentsline {chapter}{\numberline {2}Livello di applicazione}{13}{}%
+\contentsline {subsubsection}{HTTP con connesioni persistenti}{16}{}%

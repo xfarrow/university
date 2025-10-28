@@ -638,12 +638,113 @@ Come vengono inseriti i record nel database DNS? Un utente che vuole registrare 
 
 Fino a poco tempo fa i contenuti di ciascun server DNS venivano inseriti in maniera statica per mezzo di un file di confiurazione. Con le nuove versioni del protocollo DNS è stata aggiunta l'opzione UPDATE per consentire l'aggiunta o la cancellazione dinamica dei dati del database attraverso messaggi DNS.
 
+\section*{2.5 Distribuzione di file P2P}
+Nell'architettura P2P ci sono coppie di host connessi spesso in modo intermittente, chiamati peer, che comunicano direttamente l'uno con l'altro. I peer non appartengono ai fornitori di servizi, ma sono computer controllati dagli utenti.
 
+Un'applicazione particolarmente adatta per una struttura P2P: la distribuzione di un file voluminoso. In una distribuzione di file client-server, il server deve inviare una copia del file a ciascun client, ponendo un enorme fardello sul server e consumandone un'elevata quantità di banda. In una distribuzione di file P2P ciascun peer può ridistribuire agli altri qualsiasi porzione del file abbia ricevuto. Uno fra i più diffusi protocolli di distribuzione file P2P è BitTorrent.
 
+\subsubsection*{Scalabilità dell'architettura P2P}
+Illustriamo ora la scalabilità dell'architettura P2P. Il tempo di distribuzione è il tempo richiesto affinché tutti gli $N$ client ottengano una copia del file.
 
+Facciamo un'analisi dell'architettura client-server.
 
+Sia $u_{s}$ la banda di upload del collegamento di accesso del server, $u_{i}$ la banda di upload del collegamento di accesso dell'i-esimo client, $d_{i}$ la banda di download del collegamento di accesso dell'i-esimo client, $F$ la dimensione in bit del file da trasferire e $N$ il numero di client che vuole una copia del file. Ipotizziamo, inoltre, che il nucleo di Internet abbia banda superiore a qualunque $u$ e $d$: ciò implica che tutti i colli di bottiglia siano nelle reti di accesso.
 
+Il tempo di distribuzione del file per l'architettura client-server la denotiamo con $D_{cs}$
 
+Facciamo le seguenti osservazioni:
+
+\begin{itemize}
+	\item Il server deve trasmettere una copia dei file a ciascuno degli $N$ peer, cioè $NF$ bit. Dato che la banda di upload del server è $u_{s}$, il tempo per distribuire il file è almeno $\frac{NF}{u_{s}}$.
+	\item Sia $d_{min}$ la banda di download più bassa tra tutti i client. Ovverosia $d_{min} = \{d_{1}, d_{2}, ..., d_{N}\}$. Allora questo client non può ricevere tutti i bit in meno di di $F/d_{min}$ secondi.
+\end{itemize}
+
+Mettendo insieme queste due osservazioni avremo che:
+
+$$ D_{cs} \geq MAX\left\{ \frac{NF}{u_{s}}, \frac{F}{d_{min}} \right \} $$
+Ciò fornisce un limite inferiore al tempo di distribuzione per l'architettura client-server. Per $N$ sufficientemente grande, il tempo di distribuzione minimo è dato dal termine $\frac{NF}{u_{s}}$ ciò implica che da un $N$ in poi, il tempo di distribuzione minimo aumenta linearmente con $N$.
+
+Adesso facciamo un'analisi analoga per l'architettura P2P. Denotiamo con $P_{1}$ il peer che all'inizio ha tutto il file, mentre gli altri non ce l'hanno. Quando un peer riceve alcune parti di questo file, può usare la propria capacità di upload per distribuire queste parti agli altri peer.
+
+Facciamo le seguenti supposizioni, assolutamente analoghe alla controparte client-server:
+Sia $u_{s}$ la banda di upload del collegamento di accesso di $P_{1}$, $u_{i}$ la banda di upload del collegamento di accesso dell'i-esimo peer, $d_{i}$ la banda di download del collegamento di accesso dell'i-esimo peer, $F$ la dimensione in bit del file da trasferire e $N$ il numero di peer che vuole una copia del file. Ipotizziamo, inoltre, che il nucleo di Internet abbia banda superiore a qualunque $u$ e $d$: ciò implica che tutti i colli di bottiglia siano nelle reti di accesso.
+
+Ora facciamo le seguenti osservazioni:
+\begin{itemize}
+	\item All'inizio della distribuzine solo $P_{1}$ dispone del file. Esso deve necessariamente inviare ciascun bit del file almeno una volta. Quinid il tempo di distribuzione minimo è $F/u_{s}$. Si noti che un bit inviato una volta dal server potrebbe non essere inviato di nuovo (ecco perché non è $NF/u_{s}$)
+	\item Il peer con la velocità di download più bassa non può ottenere tutti i bit del file in meno di $F/d_{min}$. Quindi il tempo di distribuzione è perlomeno $F/d_{min}$
+	\item Devono essere consegnati $F$ bit a ciascuno degli $N$ peer per un totale di $NF$ bit. Questi $NF$ bit non possono viaggiare sulla rete a una velocità più elevata di $u_{tot} = u_{s} + u_1 ... + u_{N}$ quindi il tempo di distribuzione minimo è almeno $NF/u_{tot}$
+\end{itemize}
+
+Mettendo insieme queste considerazioni otteniamo che
+$$  D_{P2P} \geq \left\{ \frac{F}{U_s}, \frac{F}{d_{min}}, \frac{NF}{u_{tot}} \right\}$$
+
+Si può dimostrare che ciò sempre minore di $D_{cs}$ per ogni $N \geq x$. Cioè da un punto in poi $D_{P2P} < D_{cs}$
+
+\subsubsection*{BitTorrent}
+BitTorrent è un protocollo P2P per la distirbuzione di file. L'insieme di tutti i peer che partecipano alla distribuzione di un particolare file è chiamato torrent. I peer in un torrent si scambiano l'un l'altro chunk di file di uguale dimensione.
+
+Quando un peer entra a far parte di un torrent per la prima volta, non ha alcun chunk. Col passare del tempo accumula sempre più parti che, mentre scarica, invia agli altri peer, anche se il file non è stato ancora scaricato del tutto. Una volta che un peer ha acquisito un intero file può egoisticamente lasciare il torrent o altruisticamente rimanerci dentro e continuare ad aiutare nella distribuzione.
+
+Qualunque peer può lasciare il torrent in qualsiasi momento, anche solo con un sottoinsieme di chunk del file completo e rientrare a far parte del torrent in seguito.
+
+Per ciascun torrent vi è un nodo chiamato tracker. Quando un peer entra a far parte di un torrent, si registra presso il tracker e periodicamente lo informa che è ancora nel torrent. In questo modo il tracker tiene traccia dei peer che stanno partecipando al torrent.
+
+Si supponga Alice decida di unirsi al torrent. Il tracker seleziona in modo casuale un sottoinsieme di peer dall'insieme dei peer che stanno partecipando a quel torrent e invia gli indirizzi IP di questi host ad Alice, la quale stabilisce contrmporaneamente con loro delle connessioni TCP. Chiamiamo questo sottorinsieme "peer vicini". I peer vicini cambiano nel tempo perché (1) potrebbero disconnettersi e (2) dei peer potrebbero stabilire di loro iniziativa connessioni con Alice.
+
+Periodicamente Alice chiede ai suoi peer vicini la lista del chunk del file in loro possesso e richiede quelli che ancora le mancano. La modalità con cui richiede i chunk si chiama rarest first, ovvero richiede per prima quelli con il minor numero di copie tra i peer. In questo modo si tenta di mantenere il numero di copie per ogni chunk simile.
+
+Ora che Alice ha un algoritmo che le dica da chi e come ottenere i chunk, similmente ha bisogno di un algoritmo che le dica a chi inviare i chunk. L'idea di base è che Alice attribuisca priorità ai vicini che le stanno mandando i chunk alla velocità più alta: per ciascuno dei suoi vicini, Alice misura costantemente la velocità a cui riceve dati e determina i 4 peer che le stanno inviando i chunk alla velocità più elevata e manda a questi i chunk che le richiedono. Ogni 10 secondi ricalcola la velocità. Questi 4 peer vengono chiamati unchoked. Inoltre ogni 30 secondi, tra i propri vicini, sceglie un vicino casuale in più al quale gli invia i chunk. Questo vicino in più si chiama optimistically unchoked. Ciò consente ai nuovi peer senza alcun chunk di iniziare a ottenerne qualcuno.
+
+Due peer continueranno a effettuare scambi tra loro finché uno non trovi un partner migliore. L'effetto è che i peer in grado di inviare dati a velocità simili tendono ad accoppiarsi.
+
+Tutti i peer ad eccezione di quei cinque sono detti choked e quindi non ricevono nessun chunk da Alice.
+
+Questo meccanismo di incentivazione viene detto tit-for-that.
+
+Oltre ai tracker esistono anche le DHT (Distributed Hash Table) che assolvono lo stesso compito. Sono database distributi fra tutti i peer.
+
+\section*{2.6 Streaming video e reti per la distribuzione di contenuti}
+\subsection*{2.6.1 Video su Internet}
+Un video è una sequenza di immagini visualizzate a velocità costante. La caratteristica più saliente dei video è l'elevato throughput con cui è necessario inviare bit sulla rete. Ciò può tradursi in enormi quantità di traffico e di spazio di archiviazione. Il throughput medio deve essere più alto del bitrate del video per avere una riproduzione continua.
+
+\subsection*{2.6.2 Streaming HTTP e DASH}
+Nello streaming HTTP un video viene  memorizzato in un server come un file ordinario referenziato da un URL. Il client stabilisce una connessione TCP con il server al quale invia una richiesta GET sull'URL specificato.
+
+Istante dopo istante i byte ricevuti vengono memorizzati in un buffer. Quando il numero di byte nel buffer supera una soglia prefissata, l'applicazione client inizia la riproduzione.
+
+Lo streaming HTTP presenta un grande svantaggio: i client ricevono sempre la stessa versione del video indipendentemente dalla larghezza di banda che hanno a disposizione. Per superare questo problema è stato sviluppato un nuovo tipo di streaming basato su HTTP chiamato DASH. In DASH, i video vengono codificati in varie versioni, ognuna a un bitrate diverso. Il client richiede segmenti in modo dinamico: quando ha più banda richiede video di maggiore qualità e viceversa. I video sono sempre memorizzati su un server HTTP, ognuno identificato da un URL diverso. Oltre ai video, però, vi è anche un file di manifesto che contiene, per ogni versione del video, il bitrate e l'URL sul quale raggiungerlo. Il client seleziona a ogni istante un blocco. Mentre scarica un blocco, il client misura la banda di ricezione e, con questa informazione, al prossimo istante seleziona il blocco più adeguato.
+
+\subsection*{2.6.3 Reti per la distribuzione di contenuti}
+L'approccio più diretto per le aziende di streaming sarebbe quello di creare un enorme server nel quale memorizzare tutti i video e mandarli in streaming a chiunque li richieda. Questo presenta tre svantaggi principali: (1) il client potrebbe essere lontano dal server. Più il cammino di un pacchetto è lungo più è probabile incontrare un collo di bottiglia, nonché i vari ritardi si accumulano; (2) un video molto popolare verrebbe inviato tante volte sullo stesso collegamento ; (3) c'è un singolo punto di rottura.
+
+Per superare questi problemi si usano le CDN (content distirbution network). Una CDN gestisce server distribuiti e memorizza copie dei video e di altri contenuti in uno o più. Quando un utente richiede una risorsa, la CDN lo regirige verso il server in grado di offrire il servizio migliore.
+
+Vi sono due approcci alla dislocazione dei server della CDN:
+\begin{itemize}
+	\item Enter deep: entrare profondamente nelle reti di accesso, installando server direttamente negli ISP di accesso sparsi in tutto il mondo, in questo modo diminuendo il numero di collegamenti tra l'utente finale e il server. Il rovescio della medaglia è che richiede una forte manutenzione.
+	\item Bring home: si costruiscono server in pochi punti chiave posti in luoghi ai PoP degli ISP di livello 1. Qui vi è meno manutenzione ma meno qualità del servizio.
+\end{itemize}
+
+I video raramente richiesti non vengono copiati su tutti i cluster, ma usano una strategia per cui se un client richiede un video a un cluster che non lo ha memorizzato, quest'ultimo lo recupera da un archivio centrale o da un altro cluster e ne memorizza una copia mentre lo manda in streaming al client. I video meno richiesti vengono rimossi quando lo spazio disponibile si esaurisce.
+
+\subsubsection*{Come funziona la CDN}
+Quando un browser chiede di recuperare uno specifico video, la CDN deve intercettare la richiesta in modo da poter determinare il cluster più appropriato per quel cliente a quell'istante e dirigere la richiesta in uno dei server del cluster.
+
+Vediamo cosa succede quando l'utente chiede https://www.youtube.com/XYZABC:
+\begin{itemize}
+	\item Il suo host invia una richiesta DNS a www.youtube.com
+	\item Il server autoritativo di YouTube passa risponde con un server autoritativo di KingCDN tipo kingcdn.com
+	\item KingCDN rileva XYZABC e risponde al LDNS con il server più adatto
+	\item Il client si collega a questo server
+\end{itemize}
+
+\subsubsection*{Strategie di selezione dei cluster}
+La CDN deve selezionare un cluster adatto.
+
+Una semplice strategia consiste nell'assegnare a un client il cluster geograficamente più vicino. Gli indirizzi IP dell'LDNS vengono assegnati a un luogo specifico e la CDN risponde con il cluster più vicino. Tuttavia, per alcuni client potrebbe non andare bene perché il cluster più vicino geograficamente potrebbe essere diverso da quello più vicino dal punto di vista della rete. Inolte, l'LDNS potrebbe trovarsi lontano dal client.
+
+Un secondo approccio determina il cluster migliore per un client basandosi sulle condizioni di traffico correnti effettuuando misure in tempo reale delle prestazioni tra i loro cluster e i client. Per esempio, facendo sondare periodicamente dai propri cluster tutti gli LDNS del mondo. Il problema di tale approccio è che molti LDNS sono configurati per non rispondere a tali richieste per non parlare della complessità della cosa.
 
 
 

@@ -231,14 +231,14 @@ Quindi a ciascun livello il pacchetto ha due tipi di campi: quello di intestazio
 Le applicazioni sono la ragion d'essere delle reti di calcolatori. Senza di esse predisporre una rete sarebbe inutile.
 
 \section*{2.1 Principi delle applicazioni di rete}
-I programmi che fanno uso del livello Applicazione sono eseguiti sui sistemi periferici che comunicano tra loro via rete. Esempi di programmi sono i browser e i web server. I programmatori delle applicazioni non hanno bisogno di scrivere software che viene eseguito sui commutatori
+I programmi che fanno uso dei protocolli a livello applicazione sono eseguiti sui sistemi periferici che comunicano tra loro via rete. Esempi di programmi sono i browser e i web server.
 
 \subsection*{2.1.1 Architettura delle applicazioni di rete}
-Per lo sviluppatore di applicazioni l'architettura di rete è fissa e fornisce alle applicazioni uno specifico insieme di servizi. Il compito dello sviluppatore è progettare l'applicazione. Egli deve scegliere tra utilizzare l'architettura client-server o P2P (peer-to-peer).
+L'architettura di rete fornisce alle applicazioni uno specifico insieme di servizi. Il compito dello sviluppatore è scegliere tra utilizzare l'architettura client-server o l'architettura Peer to Peer.
 
-Nell'architettura client-server vi è un host sempre attivo, chiamato server, che risponde alle richieste di servizi da altri host, detti client. I client non si connettono direttamente fra loro.
+Nell'architettura client-server vi è un host sempre attivo, chiamato server, che risponde ad altri host, detti client. I client non si connettono direttamente fra loro.
 
-In un'architettura P2P si sfrutta invece la comunicazione diretta di host, chiamati peer, che a differenza di un server centralizzato possono (e spesso lo sono) collegati in maniera intermittente. I peer non appartengono a un fornitore di servizi ma appartengono agli utenti. Uno dei punti di forza dell'architettura P2P è la sua intrinseca scalabilità e sono anche economicamente convenienti perché non richiedono server prestanti nè una banda elevata.
+In un'architettura P2P si sfrutta invece la comunicazione diretta fra pari (peer), che a differenza di un server centralizzato possono (e spesso lo sono) collegati in maniera intermittente. I peer non appartengono a un fornitore di servizi ma appartengono agli utenti. Uno dei punti di forza dell'architettura P2P è la sua intrinseca scalabilità e sono anche economicamente convenienti perché non richiedono server prestanti nè una banda elevata.
 
 Alcune applicazioni presentano un'architettura ibrida, combinando sia elementi P2P che client-server.
 
@@ -248,22 +248,20 @@ I processi su due sistemi terminali comunicano scambiandosi messaggi attraverso 
 \subsubsection*{Processi client e server}
 Per ciascuna coppia di processi comunicanti ne etichettiamo uno come client e l'altro come server. In alcune applicazioni un processo può essere sia client che server (come ad esempio in un programma P2P). Nonostante ciò possiamo comunque etichettarli basandoci sul contesto di una specifica sessione.
 
-Un processo che richiede il servizio o le informazioni è indicato come client mentre quello che eroga il servizio o procura le informazioni è detto server. \textbf{Scrivere meglio. Così sembra che i protocolli PULL come POP3 abbiano client/server invertito.}
+Un processo che richiede il servizio e instaura la connessione è indicato come client mentre quello che eroga il servizio o procura le informazioni è detto server.
 
 \subsubsection*{L'interfaccia tra il processo e la rete}
 Ogni messaggio inviato da un processo a livello applicativo a un altro remoto deve passare attraverso la rete sottostante. Il processo presuppone l'esistenza di un'infrastruttura esterna che trasporterà il messaggio attraverso la rete.
 
 Un processo invia messaggi nella rete e riceve messaggi dalla rete attraverso un'interfaccia software detta socket. Una socket è l'interfaccia tra il livello di applicazione e quello di trasporto all'interno di un host. Viene chiamata anche API tra l'applicazione e la rete.
 
-Il progettista di un'applicazione può (1) scegliere il protocollo di trasporto e (2) talvolta determinare alcuni parametri a livello di trasporto.
-
 \subsubsection*{Indirizzamento}
-I processi riceventi devono poter avere un indirizzo per ricevere i messaggi inviati da un processo in esecuzione su un altro host. Per identificare un processo ricevente è necessario specificare due informazioni: (1) l'indirizzo dell'host e (2) un identificatore del processo ricevente sull'host di destinazione. Il punto (2) serve perché su un host potrebbero esserci più processi in esecuzione simultaneamente.
+I processi devono poter avere un indirizzo per ricevere i messaggi inviati da un processo in esecuzione su un altro host. Per identificare un processo ricevente è necessario specificare due informazioni: (1) l'indirizzo dell'host e (2) un identificatore del processo ricevente sull'host di destinazione. Il punto (2) serve perché su un host potrebbero esserci più processi in esecuzione simultaneamente.
 
 In Internet gli host vengono identificati attraverso un indirizzo IP, composto da 32 bit, che per il momento, possiamo pensare che identificano univocamente un host. Il processo mittente deve anche identificare il processo destinatario, più specificatamente, la socket che deve ricevere il dato. Un numero di porta di destinazione assolve questo compito. Alle applicazioni più note sono stati assegnati numeri di porta specifici.
 
 \subsection*{2.1.3 Servizi di trasporto disponibili per le applicazioni}
-Il protocollo a livello di trasporto ha la responsabilità di consegnare i messaggi alla socket del processo ricevente. I protocolli di trasporto lo possiamo classificare in 4 dimensioni: trasferimento dati affidabile, throughput garantito, temporizzazione e sicurezza
+Il protocollo a livello di trasporto ha la responsabilità di consegnare i messaggi alla socket del processo ricevente. I protocolli di trasporto li possiamo classificare in 4 dimensioni: trasferimento dati affidabile, throughput garantito, temporizzazione e sicurezza
 
 \subsubsection*{Trasferimento dati affidabile}
 In alcune applicazioni la perdita di informazioni potrebbe causare gravi conseguenze. Dunque, per supportare tali applicazioni occorre garantire che i dati inviati siano consegnati corretti e completi. Se un protocollo fornisce ciò si dice che fornisce un trasferimento dati affidabile.
@@ -292,7 +290,7 @@ In Internet ci sono due protocolli di trasporto: TCP e UDP.
 TCP prevede un servizio orientato alla connessione e il trasporto affidabile dei dati.
 
 \begin{itemize}
-	\item Servizio orientato alla connessione: TCP fa in modo che client e server si scambino informazioni di controllo prima che i messaggi a livello di applicazione comincino a fluire. Questa procedura, detta handshaking, prepara gli host alla trasmissione dei pacchetti. Dopo la fase di handshaking c'è la vera e propria connessione TCP tra le socket che è full-duplex, ovvero possono scambiarsi contemporaneamente messaggi. L'applicazione deve chiudere la connessione quando termina di inviare messaggi.
+	\item Servizio orientato alla connessione: TCP fa in modo che client e server si scambino informazioni di controllo prima che i dati veri e propri comincino a fluire. Questa procedura, detta handshaking, prepara gli host alla comunicazione. Dopo la fase di handshaking c'è la connessione tra le socket full-duplex, ovvero possono scambiarsi contemporaneamente segmenti. L'applicazione deve chiudere la connessione quando il trasferimento dei dati termina.
 	
 	\item Servizio di trasferimento affidabile: i processi comunicanti possono contare su TCP per trasportare dati senza errori e nel giusto ordine.
 \end{itemize}
@@ -300,7 +298,7 @@ TCP prevede un servizio orientato alla connessione e il trasporto affidabile dei
 TCP prevede anche un meccanismo di controllo della congestione che beneficia l'intero Internet, non solo i processi comunicanti.
 
 \subsubsection*{Servizi di UDP}
-UDP è un protocollo di trasporto leggero non orientato alla connessione e dunque non necessita di handshaking. Non offre alcun tipo di affidabilità: il protocollo non garantisce che un certo messaggio arrivi al destinatario, e se lo fanno, potrebbero non giungere in ordine. Non include neanche un meccanismo di controllo della congestione.
+UDP è un protocollo di trasporto leggero non orientato alla connessione e dunque non necessita di handshaking. Non offre alcun tipo di affidabilità: il protocollo non garantisce che i segmenti arrivino al destinatario, e se lo fanno, potrebbero non giungere in ordine. Non include neanche un meccanismo di controllo della congestione.
 
 \subsubsection*{Servizi non forniti dai protocolli di trasporto di Internet}
 Garanzie di throughput e temporizzazione non sono forniti dagli odierni protocolli di trasporto di Internet.
@@ -310,19 +308,27 @@ Un protocollo a livello di applicazione definisce come i processi di un'applicaz
 
 Un protocollo a livello di applicazione definisce:
 \begin{itemize}
-	\item I tipi di messaggio scambiati (es. solo richieste o richieste e risposte)
+	\item Quali tipi di messaggio esistono (richieste, risposte, notifiche)
 	\item La sintassi dei messaggi
 	\item La semantica dei messaggi
-	\item Le regole per determinare quando e come un processo invia e risponde ai messaggi \textbf{Allora comprende parte del punto 1?}
+	\item Quando e in che ordine i messaggi vengono scambiati
 \end{itemize}
 
-È importante distinguere tra applicazioni di rete e protocolli a livello di applicazioni di rete. Un protocollo è solo una parte di un'applicazione. Il Web è un'applicazione di rete che consiste in uno standard per i formati dei documenti, il browser, il web server e infine il protocollo a livello di applicaione: HTTP. \textbf{Quindi sia un browser che Internet sono "applicazioni"?}
+È importante distinguere tra applicazioni di rete e protocolli a livello di applicazioni di rete. 
+
+Un protocollo è solo una parte di un'applicazione. 
+
+Il Web è un'applicazione di rete che consiste in uno standard per i formati dei documenti, il browser, il web server e infine il protocollo a livello di applicaione: HTTP.
 
 \section*{2.2 Web e HTTP}
 \subsection*{2.2.1 Panoramica di HTTP}
 HTTP è un protocollo a livello di applicazione del Web. Questo protocollo è implementato in due programmi: client e server.
 
-Una pagina Web, detta anche documento, è costituita da oggetti. Un oggetto è semplicemente un file (es. una pagina HTML o un'immagine) indirizzabile tramite URL. La maggior parte delle pagine web consiste in un file HTML principale e diversi oggetti referenziati da esso.
+Una pagina Web è composta da uno o più oggetti.
+Un oggetto è un singolo file accessibile tramite un URL, come ad esempio una pagina HTML, un’immagine, un foglio di stile CSS o uno script JavaScript.
+
+Nella maggior parte delle pagine Web, c’è un file HTML principale che definisce la struttura della pagina e referenzia altri oggetti necessari per la visualizzazione completa della pagina (immagini, stili, script, ecc.).
+L’insieme di questi oggetti — HTML principale più oggetti referenziati — costituisce la pagina Web complessiva.
 
 Ogni URL ha almeno due componenti: il nome dell'host del server che ospita l'oggetto e il percorso dell'oggetto.
 
@@ -405,7 +411,7 @@ Un esempio di messaggio di risposta HTTP è
 \texttt{Content-Type: text/html}\\
 \texttt{<html>...</head>}\\
 
-Qui per prevità abbiamo omesso i caratteri di carriage return e new line Troviamo la riga di stato, un numero variabile di intestazioni e il corpo.
+Qui per prevità abbiamo omesso i caratteri di carriage return e new line. Troviamo la riga di stato, un numero variabile di intestazioni e il corpo.
 
 \begin{itemize}
 	\item La riga di stato presenta tre campi: la versione del protocollo, un codice di stato e un messaggio relativo al codice di stato
@@ -439,7 +445,7 @@ Una web cache è un'entità di rete che soddisfa richieste HTTP al posto del web
 
 Ecco cosa succede:
 \begin{enumerate}
-	\item Il browser stabilisce una connessione TCP con il proxy serber e gli invia una richiesta HTTP per l'oggetto specificato.
+	\item Il browser stabilisce una connessione TCP con il proxy server e gli invia una richiesta HTTP per l'oggetto specificato.
 	\item Il proxy controlla la presenza di una copia dell'oggetto memorizzato localmente. Se l'oggetto viene rilevato, il proxy lo inoltra al client
 	\item Se la cache non dispone dell'oggetto, apre una connessione con il server di origine, richiedendo l'oggetto in questione. Il server gli risponde
 	\item Il proxy salva l'oggetto nella propria cache e lo manda al client.

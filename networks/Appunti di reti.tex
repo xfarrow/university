@@ -675,12 +675,14 @@ Fino a poco tempo fa i contenuti di ciascun server DNS venivano inseriti in mani
 \section*{2.5 Distribuzione di file P2P}
 Nell'architettura P2P ci sono coppie di host connessi spesso in modo intermittente, chiamati peer, che comunicano direttamente l'uno con l'altro. I peer non appartengono ai fornitori di servizi, ma sono computer controllati dagli utenti.
 
-Un'applicazione particolarmente adatta per una struttura P2P: la distribuzione di un file voluminoso. In una distribuzione di file client-server, il server deve inviare una copia del file a ciascun client, ponendo un enorme fardello sul server e consumandone un'elevata quantità di banda. In una distribuzione di file P2P ciascun peer può ridistribuire agli altri qualsiasi porzione del file abbia ricevuto. Uno fra i più diffusi protocolli di distribuzione file P2P è BitTorrent.
+Un'applicazione particolarmente adatta per una struttura P2P è la distribuzione di un file voluminoso. In una distribuzione di file client-server, il server deve inviare una copia del file a ciascun client, ponendo un enorme fardello sul server e consumandone un'elevata quantità di banda. In una distribuzione di file P2P ciascun peer può ridistribuire agli altri qualsiasi porzione del file abbia ricevuto. Uno fra i più diffusi protocolli di distribuzione file P2P è BitTorrent.
 
 \subsubsection*{Scalabilità dell'architettura P2P}
-Illustriamo ora la scalabilità dell'architettura P2P. Il tempo di distribuzione è il tempo richiesto affinché tutti gli $N$ client ottengano una copia del file.
+Illustriamo ora la scalabilità dell'architettura P2P confrontandola con l'architettura client-server.
 
-Facciamo un'analisi dell'architettura client-server.
+Definiamo il tempo di distribuzione essere il tempo richiesto affinché tutti gli $N$ client (o peer) ottengano una copia del file distribuito dall' $(N+1)$-esimo partecipante alla rete.
+
+Facciamo dapprima un'analisi dell'architettura client-server.
 
 Sia $u_{s}$ la banda di upload del collegamento di accesso del server, $u_{i}$ la banda di upload del collegamento di accesso dell'i-esimo client, $d_{i}$ la banda di download del collegamento di accesso dell'i-esimo client, $F$ la dimensione in bit del file da trasferire e $N$ il numero di client che vuole una copia del file. Ipotizziamo, inoltre, che il nucleo di Internet abbia banda superiore a qualunque $u$ e $d$: ciò implica che tutti i colli di bottiglia siano nelle reti di accesso.
 
@@ -711,7 +713,7 @@ Ora facciamo le seguenti osservazioni:
 \end{itemize}
 
 Mettendo insieme queste considerazioni otteniamo che
-$$  D_{P2P} \geq \left\{ \frac{F}{U_s}, \frac{F}{d_{min}}, \frac{NF}{u_{tot}} \right\}$$
+$$  D_{P2P} \geq MAX\left\{ \frac{F}{U_s}, \frac{F}{d_{min}}, \frac{NF}{u_{tot}} \right\}$$
 
 Si può dimostrare che ciò sempre minore di $D_{cs}$ per ogni $N \geq x$. Cioè da un punto in poi $D_{P2P} < D_{cs}$
 

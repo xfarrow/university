@@ -233,12 +233,18 @@ Le applicazioni sono la ragion d'essere delle reti di calcolatori. Senza di esse
 \section*{2.1 Principi delle applicazioni di rete}
 I programmi che fanno uso dei protocolli a livello applicazione sono eseguiti sui sistemi periferici che comunicano tra loro via rete. Esempi di programmi sono i browser e i web server.
 
+Un'applicazione di rete è un servizio che utilizza la rete per permettere la comunicazione o lo scambio di dati tra host diversi. È formata da uno o più programmi applicativi (es. browser, client e-mail) che comunicano tra loro tramite protocolli di livello applicazione (es. HTTP, SMTP, IMAP).
+
+Esempi: Web, posta elettronica (e-mail), messaggistica, streaming.
+
+La loro implementazione è detta programma. Un programma in esecuzione è un processo.
+
 \subsection*{2.1.1 Architettura delle applicazioni di rete}
 L'architettura di rete fornisce alle applicazioni uno specifico insieme di servizi. Il compito dello sviluppatore è scegliere tra utilizzare l'architettura client-server o l'architettura Peer to Peer.
 
-Nell'architettura client-server vi è un host sempre attivo, chiamato server, che risponde ad altri host, detti client. I client non si connettono direttamente fra loro.
+Nell'architettura client-server vi è un host sempre attivo, chiamato server, che risponde alle richieste di altri host, detti client i quali sono i primi a inizializzare la comunicazione. I client non si connettono direttamente fra loro.
 
-In un'architettura P2P si sfrutta invece la comunicazione diretta fra pari (peer), che a differenza di un server centralizzato possono (e spesso lo sono) collegati in maniera intermittente. I peer non appartengono a un fornitore di servizi ma appartengono agli utenti. Uno dei punti di forza dell'architettura P2P è la sua intrinseca scalabilità e sono anche economicamente convenienti perché non richiedono server prestanti nè una banda elevata.
+In un'architettura P2P si sfrutta invece la comunicazione diretta fra pari (peer), che a differenza di un server centralizzato possono (e spesso lo sono) collegati in maniera intermittente. I peer non appartengono a un fornitore di servizi ma appartengono agli utenti. Uno dei punti di forza dell'architettura P2P è la sua intrinseca scalabilità e ed è anche economicamente conveniente perché non richiede server prestanti nè una banda elevata.
 
 Alcune applicazioni presentano un'architettura ibrida, combinando sia elementi P2P che client-server.
 
@@ -258,7 +264,7 @@ Un processo invia messaggi nella rete e riceve messaggi dalla rete attraverso un
 \subsubsection*{Indirizzamento}
 I processi devono poter avere un indirizzo per ricevere i messaggi inviati da un processo in esecuzione su un altro host. Per identificare un processo ricevente è necessario specificare due informazioni: (1) l'indirizzo dell'host e (2) un identificatore del processo ricevente sull'host di destinazione. Il punto (2) serve perché su un host potrebbero esserci più processi in esecuzione simultaneamente.
 
-In Internet gli host vengono identificati attraverso un indirizzo IP, composto da 32 bit, che per il momento, possiamo pensare che identificano univocamente un host. Il processo mittente deve anche identificare il processo destinatario, più specificatamente, la socket che deve ricevere il dato. Un numero di porta di destinazione assolve questo compito. Alle applicazioni più note sono stati assegnati numeri di porta specifici.
+In Internet gli host vengono identificati attraverso un indirizzo IP, composto da 32 bit che per il momento possiamo pensare che identifica univocamente un host. Il processo mittente deve anche identificare il processo destinatario, più specificatamente, la socket che deve ricevere il dato. Un numero di porta di destinazione assolve questo compito. Alle applicazioni più note sono stati assegnati numeri di porta specifici.
 
 \subsection*{2.1.3 Servizi di trasporto disponibili per le applicazioni}
 Il protocollo a livello di trasporto ha la responsabilità di consegnare i messaggi alla socket del processo ricevente. I protocolli di trasporto li possiamo classificare in 4 dimensioni: trasferimento dati affidabile, throughput garantito, temporizzazione e sicurezza
@@ -304,7 +310,7 @@ UDP è un protocollo di trasporto leggero non orientato alla connessione e dunqu
 Garanzie di throughput e temporizzazione non sono forniti dagli odierni protocolli di trasporto di Internet.
 
 \subsection*{2.1.5 Protocolli a livello di applicazione}
-Un protocollo a livello di applicazione definisce come i processi di un'applicazione, in esecuzione su sistemi periferici diversi, si scambiano messaggi.
+Un protocollo a livello di applicazione definisce come i processi di un'applicazione in esecuzione su sistemi periferici diversi si scambiano messaggi.
 
 Un protocollo a livello di applicazione definisce:
 \begin{itemize}
@@ -328,7 +334,7 @@ Una pagina Web è composta da uno o più oggetti.
 Un oggetto è un singolo file accessibile tramite un URL, come ad esempio una pagina HTML, un’immagine, un foglio di stile CSS o uno script JavaScript.
 
 Nella maggior parte delle pagine Web, c’è un file HTML principale che definisce la struttura della pagina e referenzia altri oggetti necessari per la visualizzazione completa della pagina (immagini, stili, script, ecc.).
-L’insieme di questi oggetti — HTML principale più oggetti referenziati — costituisce la pagina Web complessiva.
+L’insieme di questi oggetti, HTML principale più oggetti referenziati, costituisce la pagina Web complessiva.
 
 Ogni URL ha almeno due componenti: il nome dell'host del server che ospita l'oggetto e il percorso dell'oggetto.
 
@@ -342,7 +348,7 @@ HTTP utilizza TCP come protocollo di trasporto. In questo modo HTTP non si deve 
 
 Il client invia richieste e riceve risposte HTTP tramite la propria interfaccia socket. Analogamente, il server riceve richieste e invia risposte tramite la propria.
 
-Il server invia i file richiesti al client senza memorizzare alcune informazione di stato a proposito del client. Per questo motivo viene detto protocollo senza memoria di stato (stateless).
+Il server invia i file richiesti al client senza memorizzare alcune informazione di stato su di esso. Per questo motivo viene detto protocollo senza memoria di stato (stateless).
 
 \subsection*{2.2.2 Connessioni persistenti e non persistenti}
 Ciascuna coppia richiesta/risposta deve essere inviata su una connessione TCP separata o devono essere inviate tutte sulla stessa connessione? Nel primo caso si dice che l'applicazione usa connessioni non persistenti, nel secondo caso usa connessioni persistenti.
@@ -357,16 +363,14 @@ Ecco cosa avviene quando HTTP usa connessioni non persistenti, supponendo che il
 	\item Il client riceve il messaggio di risposta e la connessione TCP termina
 \end{enumerate}
 
-Come abbiamo visto, ciascuna connessione TCP trasporta solo un messaggio di richiesta e uno di risposta. Se la pagina index.html avesse contenuto 10 oggetti al suo interno, avrebbe generato 11 connessioni TCP, ognuna per ciasun oggetto.
+Come abbiamo visto, ciascuna connessione TCP trasporta solo un messaggio di richiesta e uno di risposta. Se la pagina index.html avesse referenziato 10 oggetti al suo interno, avrebbe generato 11 connessioni TCP, ognuna per ciasun oggetto.
 
-Definiamo essere Round Trip Time (RTT) il tempo che intercorre tra l'invio di un pacchetto e la ricezione della risposta. Quando il client vuole ottenere una risorsa, apre una connessione TCP con il server il quale risponde con una conferma. Il tempo per fare ciò è RTT. Dopodiché il client manda un messaggio al server che contiene (1) a sua volta una conferma di avvenuta ricezione e (2) la richiesta HTTP della risorsa. A questo punto il server risponde con il file HTML. Il tempo per fare ciò è un altro RTT.
-
-Il processo richiede 2 RTT (prima fase e seconda fase) + il tempo per trasfrerire la pagina HTML (tempo non trascurabile).
+Definiamo essere Round Trip Time (RTT) il tempo che intercorre tra l'invio di una richiesta e la ricezione (del primo bit) della risposta. Quando il client vuole ottenere una risorsa HTTP, apre una connessione TCP con il server il quale risponde con una conferma. Il tempo per fare ciò è almeno 1 RTT. Dopodiché il client manda un messaggio al server che contiene (1) a sua volta una conferma di avvenuta ricezione e (2) la richiesta HTTP della risorsa. A questo punto il server risponde con il file HTML. Il tempo per fare ciò è almeno un altro RTT.
 
 \subsubsection{HTTP con connesioni persistenti}
 Le connessioni non persistenti presentano alcuni limiti: il primo è che per ogni oggetto richiesto occorre stabilire e mantenere una nuova connessione. In secondo luogo ciascun oggetto subisce un ritardo di 2 RTT. Il primo per stabilire la connessione TCP il secondo per richiedere e ricevere un oggetto.
 
-Con HTTP a connessione persistente il server lascia la connessione TCP aperta dopo l'invio di una risposta, per cui le richieste e le risposte successive useranno la stessa connessione. In questo modo il server può anche spedire più oggetti contemporaneamente. Le richieste possono infatti essere fatte una di seguito all'altra senza aspettare prima il completamento delle richieste precedenti (pipelining). Il server HTTP chiude la connessione TCP quando essa rimane inattiva per un dato lasso di tempo. La modalità di default di HTTP impiega connessioni persistenti con pipelinig.
+Con HTTP a connessione persistente il server lascia la connessione TCP aperta dopo l'invio di una risposta, per cui le richieste e le risposte successive useranno la stessa connessione. In questo modo il server può anche spedire più oggetti contemporaneamente. Le richieste possono infatti essere fatte senza aspettare prima il completamento delle richieste precedenti (pipelining). Il server HTTP chiude la connessione TCP quando essa rimane inattiva per un dato lasso di tempo. La modalità di default di HTTP impiega connessioni persistenti con pipelinig.
 
 \subsection*{2.2.3 Formato dei messaggi HTTP}
 Le specifiche HTTP includono la definizione dei due formati HTTP: richiesta e risposta.
@@ -383,7 +387,7 @@ Un messaggio di richiesta HTTP è
 Notiamo fin da subito che il testo è scritto in codifica ASCII. Consiste di righe, ognuna delle quali con dei ritorni a capo. Un messaggio di richiesta può essere costituito da un numero indefinito di righe, anche una sola (la prima è obbligatoria). La prima riga è definita riga di richiesta mentre le altre sono righe di intestazione (header).
 
 \begin{itemize}
-	\item La prima riga presenta tre campi: il campo metodo, il campo URL e il campo versione di HTTP. Il campo metodo è GET quando viene richiesto un oggetto, POST quando l'utente riempie un form (l'utente sta ancora richiedendo una pagina web al server, ma i contenuti specifici della pagina dipendono da ciò che l'utente ha inserito). Si può usare GET anche per riempire un form, includendo i dati nell'URL (query string). Poi vi è il metodo HEAD, e quando un server riceve un metodo di questo tipo risponde ma tralascia gli oggetti richiesti. PUT consente di inviare un oggetto a un percorso specifico e DELETE permette di cancellare un oggetto su un server. Nota: queste sono solo convenzioni.
+	\item La prima riga presenta tre campi: il campo metodo, il campo URL e il campo versione di HTTP. Il campo metodo è GET quando viene richiesto un oggetto, POST quando l'utente riempie un form (l'utente sta ancora richiedendo una pagina web al server, ma i contenuti specifici della pagina dipendono da ciò che l'utente ha inserito). Si può usare GET anche per riempire un form, includendo i dati nell'URL (query string). Poi vi è il metodo HEAD, e quando un server riceve un metodo di questo tipo risponde ma tralascia gli oggetti richiesti. PUT consente di inviare un oggetto a un percorso specifico e DELETE permette di cancellare un oggetto su un server. In realtà questi metodi (o verbi) HTTP sono solo convenzioni. Il protocollo HTTP non impone al server di comportarsi in un certo modo.
 	\item Host specifica l'host su cui risiede l'oggetto. Si potrebbe pensare sia superflua dato che già in corso una connessione TCP con l'host ma quest'informazione serve per la cache dei proxy
 	\item Con la terza linea il browser specifica che vuole che il server chiuda la connessione dopo aver inviato l'oggetto richiesto.
 	\item User-agent specifica quale browser sta effettuando la richiesta
@@ -441,11 +445,11 @@ Il server crea un identificativo univoco e lo inserisce all'interno del proprio 
 Ogni volta che l'utente richiede una pagina web, il suo browser consulta il suo file dei cookie, estrae il suo numero identificativo per il sito e lo pone nella richiesta HTTP. In tal modo il server può monitorare l'attività dell'utente nel sito.
 
 \subsection*{2.2.5 Web caching}
-Una web cache è un'entità di rete che soddisfa richieste HTTP al posto del web server effettivo. Il proxy ha una propria memoria in cui conserva copie di oggetti recentemente richiesti.
+Una web cache (o cache proxy) è un’entità di rete che, dal punto di vista del client, si comporta come il server web rispondendo alle richieste HTTP al suo posto. Il proxy ha una propria memoria in cui conserva copie di oggetti recentemente richiesti.
 
 Ecco cosa succede:
 \begin{enumerate}
-	\item Il browser stabilisce una connessione TCP con il proxy server e gli invia una richiesta HTTP per l'oggetto specificato.
+	\item Il browser stabilisce una connessione TCP con il cache proxy server e gli invia una richiesta HTTP per l'oggetto specificato.
 	\item Il proxy controlla la presenza di una copia dell'oggetto memorizzato localmente. Se l'oggetto viene rilevato, il proxy lo inoltra al client
 	\item Se la cache non dispone dell'oggetto, apre una connessione con il server di origine, richiedendo l'oggetto in questione. Il server gli risponde
 	\item Il proxy salva l'oggetto nella propria cache e lo manda al client.
@@ -456,16 +460,16 @@ Il proxy è contemporaneamente sia client che server a seconda dei casi.
 I proxy possono (1) ridurre i tempi di risposta ai client e (2) riducono il carico dei web server e dei loro collegamenti. Ciò implica che l'intero Internet ne trae beneficio.
 
 \subsection*{GET condizionale}
-L'oggetto ospitato nel web server potrebbe essere stato modificato rispetto alla copia presente nel proxy. HTTP presenta un meccanismo che permette alla cache di verificare se i suoi oggetti sono aggiornati. Questo meccanismo è chiamato GET condizionle.
+L'oggetto ospitato nel web server potrebbe essere stato modificato rispetto alla copia presente nel cache proxy. HTTP presenta un meccanismo che permette alla cache di verificare se i suoi oggetti sono aggiornati. Questo meccanismo è chiamato GET condizionle.
 
-Un messaggio di richiesta HTTP viene chiamato messaggio di GET condizionale se (1) usa il metodo GET e (2) include una riga di intestazione If-modified-since.
+Un messaggio di richiesta HTTP viene chiamato messaggio di GET condizionale se (1) usa il metodo GET e (2) include una riga di intestazione \texttt{If-Modified-Since}.
 
 Vediamone il funzionamento:
 \begin{enumerate}
 	\item Un proxy invia un messaggio di richiesta a un web server per conto di un browser richiedente, il quale gli risponde.
-	\item In cache memorizza sia l'oggetto che la data di ultima modifica presente nell'intestazione Last-Modified
-	\item Se dopo un certo periodo di tempo un client richiede la stessa risorsa, la cache non può rispondere direttamente con quella che ha in memoria perché potrebbe essere stata modificata sul server originale. Allora la cache effettua un controllo di aggiornamento inviando una GET condizionale al server, specificando nell'header If-modified-since la data che ha in memoria precedentemente prelevata dall'header Last-Modified. Questo comunica al server di inviare l'oggetto solo se è stato modificato rispetto alla data specificata
-	\item Se è stato modificato, il server risponde con un messaggio HTTP normale compreso di oggetto e la cache aggiorna il valore di ultima modifica. Altrimenti manda un messaggio HTTP con corpo vuoto (per non sovraccaricare inutilmente la banda) con messaggio di stato 304 Not Modified che comunica al proxy che può procedere a inoltrare al client la copia dell'oggetto presente in cache
+	\item In cache memorizza sia l'oggetto che la data di ultima modifica presente nell'intestazione \texttt{Last-Modified}
+	\item Se dopo un certo periodo di tempo un client richiede la stessa risorsa, la cache non può rispondere direttamente con quella che ha in memoria perché potrebbe essere stata modificata sul server originale. Allora la cache effettua un controllo di aggiornamento inviando una GET condizionale al server, specificando nell'header \texttt{If-Modified-Since} la data che ha in memoria precedentemente prelevata dall'header \texttt{Last-Modified}. Questo comunica al server di inviare l'oggetto solo se è stato modificato rispetto alla data specificata
+	\item Se è stato modificato, il server risponde con un messaggio HTTP normale compreso di oggetto e la cache aggiorna il valore di ultima modifica. Altrimenti manda un messaggio HTTP con corpo vuoto (per non sovraccaricare inutilmente la banda) con messaggio di stato \texttt{304 Not Modified} che comunica al proxy che può procedere a inoltrare al client la copia dell'oggetto presente in cache
 \end{enumerate}
 
 \section*{2.3 Posta elettronica in Internet}
@@ -473,7 +477,7 @@ L'email rappresenta un mezzo di comunicazione asincrono.
 
 L'email è composta da tre elementi principali: gli user agent (i programmi di posta), i server di posta e i protocolli quali SMTP, POP e IMAP.
 
-Quando il mittente ha finito di comporre un messaggio, il suo user agent  lo invia al suo server di posta. Se il destinatario ha un altro server di posta, il primo manda il messaggio al secondo. Infine, l'user agent del destinatario recupera il messaggio dal suo server di posta. Ogni utente ha una casella di posta (uno spazio a lui dedicato) su un server di posta su cui vengono depositate le mail a lui indirizzate.
+Quando il mittente ha finito di comporre un messaggio, il suo user agent  lo invia al suo server di posta. Se il destinatario ha un altro server di posta, il primo manda il messaggio al secondo. Infine, l'user agent del destinatario recupera il messaggio dal suo server. Ogni utente ha una casella di posta (uno spazio a lui dedicato) su un server di posta su cui vengono depositate le mail a lui indirizzate.
 
 Se il server del mittente non può consegnare la posta a quello del destinatario, la trattiene in una coda dei messaggi e riprova l'invio diverse volte. Dopo averci provato più volte e ogni volta l'invio fallisce, il server del mittente comunica al mittente la mancata consegna.
 
@@ -511,18 +515,18 @@ HTTP trasferisce i file da un web server a un web client, mentre SMTP trasferisc
 
 Sia HTTP standard che SMTP fanno uso di connessioni persistenti.
 
-Una differenza sostanziale è che HTTP è un protocollo di tipo pull, ovvero il client "tira" le informazioni del server a sè. In altre parole chi instaura la connessione è la macchina che vuole ricevere il file. Al contrario SMTP è un protocollo di tipo push, ovvero il client "spinge" le informazioni al server. In altre parole, la connessione TCP viene inizializzata dall'host che vuole spedire i file.
+Una differenza sostanziale è che HTTP è un protocollo di tipo pull, ovvero il client "tira" le informazioni del server a sè. In altre parole chi instaura la connessione è la macchina che vuole ricevere il file. Al contrario SMTP è un protocollo di tipo push, ovvero il client "spinge" le informazioni al server. In altre parole, la connessione TCP viene inizializzata dall'host che vuole spedire i file. Ciò non vìola la definizione di client/server in quanto il client (1) avvia la comunicazione e (2) richiede il servizio di invio mail al server.
 
 Un'altra differenza è che SMTP obbliga l'intero messaggio a essere codificato in ASCII a 7 bit mentre HTTP non pone tale restrizione.
 
 \subsection*{2.3.3 Formati dei messaggi di posta}
 Il corpo dei messaggi di posta è preceduto da degli header.
-Queste righe contengono testo leggibile, costituito da una parola chiave, seguita da due punti a loro volta seguiti da un valore (esempio: Subject: this is an email). Alcune di queste righe sono obbligatorie, come From e To. Attenzione a non confondersi tra i "From/To" dei messaggi SMTP e i "From/To" degli header di messaggio.
+Queste righe contengono testo leggibile, costituito da una parola chiave, seguita da due punti a loro volta seguiti da un valore (esempio: Subject: this is an email). Alcune di queste righe sono obbligatorie, come From e To. Attenzione a non confondersi tra i "From/To" dei messaggi SMTP e i "From/To" degli header di messaggio. I campi From/To del protocollo SMTP servono al trasporto dell'email fisicamente e non compaiono all'interno del contenuto leggibile della mail che invece fa visualizzare i campi From/To negli header. In alcuni casi questi possono differire.
 
 \subsection*{2.3.4 Protocolli di accesso alla posta}
 Quando SMTP consegna il messaggio alla casella del destinatario, come fa quest'ultimo a recuperare il messaggio? 
 
-Verrebbe quasi naturale rispondere "posizioniamo un server SMTP presso il computer del destinatario", ma con questo approccio il computer del destinatario dovrebbe rimanere sempre acceso e connesso a Internet al fine di ricevere la posta. Ciò non è raccomandabile, pertanto si preferisce che l'utente acceda alla propria posta che risiede sul server quando e come egli vuole. Si noti che non possiamo usare SMTP qui in quanto esso è un protocollo push mentre in questo caso servirebbe un protocollo pull.
+Verrebbe quasi naturale rispondere "posizioniamo un server SMTP presso il computer del destinatario", ma con questo approccio il computer del destinatario dovrebbe rimanere sempre acceso e connesso a Internet al fine di ricevere la posta. Ciò non è raccomandabile, pertanto si preferisce che l'utente acceda alla propria posta che risiede sul server quando e come egli vuole. Si noti che non possiamo usare SMTP qui in quanto è un protocollo push mentre in questo caso servirebbe un protocollo pull.
 
 Ebbene, si usano dei protocolli per richiedere e trasferire la posta dal server al client. I principali sono POP3, IMAP e HTTP.
 
@@ -545,12 +549,12 @@ Con l'accesso tramite POP3, dopo aver scaricato i messaggi sulla macchina locale
 Per risolvere questo e altri problemi viene in soccorso il protocollo IMAP. Un server che adotta il protocollo IMAP associa ogni messaggio arrivato al server in una cartella. L'utente può crearne di altre e spostare i messaggi al loro interno. IMAP fornisce anche comani per consentire agli utenti di effettuare ricerche in cartelle remote. Un'altra caratteristica è che consente di scaricare solo singole parti dei messaggi.
 
 \subsubsection*{Posta basata sul Web}
-Al giorno d'oggi gli utenti possono inviano e leggono posta su un browser Web. In questo caso lo user agent è un browser web e l'utente comunica con il proprio server web via HTTP.
+Al giorno d'oggi gli utenti possono inviare e leggere posta su un browser Web. In questo caso lo user agent è un browser web e l'utente comunica con il proprio server web via HTTP.
 
 In ogni caso, anche se gli utenti finali comunicano con i loro server via HTTP, i server tra di loro comunicano via SMTP.
 
 \section*{2.4 DNS: il servizio di directory di Internet}
-Gli host di internet possono essere identificati possono essere indentificati in due modi: tramite il nome host (es. www.eff.org), che sono facili da ricordare per le persone ma non adatti per un sistema di routing e tramite indirizzo IP, difficili da ricordare ma adatto per il sistema di routing in quanto otteniamo informazioni più dettagliate all'interno del collocamento della macchina ad esso associato.
+Gli host di internet possono essere identificati possono essere indentificati in due modi: tramite il nome host (es. www.eff.org), che sono facili da ricordare per le persone ma non adatti per un sistema di routing e tramite indirizzo IP, difficili da ricordare ma adatto per il sistema di routing in quanto otteniamo informazioni più dettagliate all'interno del collocamento della macchina nella rete ad esso associato.
 
 Ogni indirizzo IP è formato da 4 byte con un punto che divide ogni byte espresso in decimale da 0 a 255 (es. 192.168.10.255). Gli indirizzi IP sono gerarchici perché leggendoli da sinistra verso destra otteniamo informazioni sempre più specifiche sulla collocazione dell'host all'interno di Internet.
 
@@ -574,7 +578,7 @@ Pertanto, il sistema DNS aggiunge un ritardo aggiuntivo alle applicazioni Intern
 Oltre alla traduzione degli hostname in indirizzi IP, il DNS mette a disposizione altri servizi:
 \begin{itemize}
 	\item Host aliasing: Un host dal nome complicato (hostname canonico) può avere uno o più sinonimi (alias). Il DNS può essere invocato per ottenere l'hostname canonico da un alias
-	\item Mail server aliasing: UGUALE AL PRIMO???
+	\item Mail server aliasing: simile all'host aliasing ma con piccole differenze che affronteremo più avanti nella trattazione
 	\item Distribuzione del carico di rete: I siti con molto traffico vengono replicati su più server, ognuno eseguito su un host diverso con un indirizzo IP diverso. Viene dunque associato un hostname a un INSIEME di indirizzi IP. Quando un client effettua una query per questo hostname, il server risponde con l'intero insieme di indirizzi, ma di volta in volta stravolgendone l'ordine. Dato che generalmente un client invia il suo messaggio al primo indirizzo IP elencato, ciò contribuisce a distribuire il traffico su server replicati.
 \end{itemize}
 
@@ -585,8 +589,6 @@ Per implementare il servizio DNS un primo approccio potrebbe essere quello di cr
 
 \subsubsection*{Un database distribuito e gerarchico}
 In realtà il servizio DNS utilizza un gran numero di server, organizzati in maniera gerarchica e distribuiti. Nessun DNS server ha tutte le corrispondenze per tutti gli host di Internet. Questa gerarchia consiste di tre classi di DNS server: i root server, i top-level domain server e i server autoritativi.
-
-Immaginiamo un client che voglia raggiungere www.eff.org. Esso dapprima contatta uno dei root server che gli restituisce uno o più indirizzi IP di server DNS relativi al TLD .org, che a sua volta gli restituisce uno o più server DNS autoritativi per eff.org. A questo punto quest'ultimo restituisce l'indirizzo IP dell'hostname www.eff.org.
 
 Esaminiamo più in dettaglio le varie classi di server DNS:
 \begin{itemize}
@@ -625,18 +627,18 @@ Ora vediamo più in dettaglio cosa avviene quando si tenta di risolvere www.doma
 In questo esempio si fa uso sia di query ricorsive che di query iterative. La richiesta effettuata dal client al DNS server locale è ricorsiva in quanto il client chiede a quest'ultimo di ottenere l'associazione dell'hostname (cioè non rimbalza al client un risultato intermedio che ha trovato). Tutte le altre richieste sono iterative in quanto server A chiede a B di risolvere solo una parte dell'hostname. Server B gli risponde e sarà compito di A procedere nella ricerca. Ogni richiesta DNS può essere o iterativa o ricorsiva.
 
 \subsubsection*{DNS caching}
-In una concatenazione di richieste il server DNS che riceve una risposta da un altro server DNS può mettere in cache le informazioni ricevute, in modo che possa rispondere senza interrogare altri server e conseguentemente incrementare i ritardi. Dopo un determinato periodo di tempo i server DNS svuotano l'informazione ricevuta. Ad esempio un DNS server locale può memorizzare in cache l'indirizzo IP dei TLD DNS server, aggirando la richiesta ai root DNS server.
+Il server DNS che riceve una risposta da un altro server DNS può mettere in cache le informazioni ricevute, in modo che successivamente possa rispondere senza interrogare altri server e conseguentemente incrementare i ritardi. Dopo un determinato periodo di tempo i server DNS svuotano l'informazione ricevuta. Ad esempio un DNS server locale può memorizzare in cache l'indirizzo IP dei TLD DNS server, aggirando la richiesta ai root DNS server.
 
 \subsection*{2.4.3 Record e messaggi DNS}
 Un server DNS risponde con i cosiddetti resource record che sono così composti:
 
-\texttt{(Name, Value, Type, TTL)}
+\texttt{(Name, TTL, Type, Value)}
 \\\\
 Il TTL è il time to live e indica il tempo residuo in cache prima di essere rimosso. Il significato di \texttt{Name} e \texttt{Value} dipende da \texttt{Type}.
 \begin{itemize}
 	\item Se \texttt{Type=A} allora \texttt{Name} è il nome dell'host e \texttt{Value} è il suo indirizzo IP. Pertando un record di tipo A fornisce la corrispondenza tra hostname e indirizzo IP. 
 	
-	\item Se \texttt{Type=NS} (Nameserver) allora \texttt{Name} è un dominio e \texttt{Value} è l'hostname del DNS server autoritativo per quel dominio
+	\item Se \texttt{Type=NS} (Nameserver) allora \texttt{Name} è un dominio e \texttt{Value} è l'hostname del DNS server autoritativo o del DNS TLD per quel dominio
 	
 	\item Se \texttt{Type=CNAME} (Canonical Name) allora \texttt{Name} è l'alias e \texttt{Value} è il nome canonico
 	
@@ -655,7 +657,7 @@ Il TTL è il time to live e indica il tempo residuo in cache prima di essere rim
 
 \paragraph{Type=MX}
 \texttt{example.com.       3600   MX    10  mx1.mailhost.net.} \\
-(Le email inviate a example.com devono essere inviate a mx1.mailhost.net con priorità 10. Potrebbe esserci un altro record per example.com con priorità 5. In quel caso le email verrebbero inviate prima a quello)
+(Le email inviate a example.com devono essere inviate a mx1.mailhost.net con priorità 10. Potrebbe esserci un altro record per esempio con priorità 5. In quel caso le email verrebbero inviate prima a quello)
 
 Notare che quando interroghi un Root DNS server non ottieni di default l'indirizzo IP del TLD DNS. Allo stesso modo quando interroghi un TLD DNS non ottieni di default l'indirizzo IP del DNS autoritativo. Ciò comporta un'ulteriore query DNS per trovare l'IP di questi server. Per evitare una query aggiuntiva, nella stessa risposta i server possono includere nella sezione Additional gli A/AAAA dei nameserver indicati.
 
@@ -665,7 +667,6 @@ Ogni server DNS autoritativo contiene un record A per un certo hostname ma anche
 
 \subsubsection*{Messaggi DNS}
 Sia le query che le risposte hanno lo stesso formato
-\textbf{DA COMPLETARE}
 
 \subsubsection*{Inserimento di un record nel database DNS}
 Come vengono inseriti i record nel database DNS? Un utente che vuole registrare un nome di dominio deve rivolgersi presso un registrar che si occupa di verificare l'unicità del nome di dominio e di inserirlo nel database DNS. Quando l'utente registra un nome di dominio presso un registrar bisogna fornirgli anche i nomi e gli indirizzi IP dei DNS server autoritativi.

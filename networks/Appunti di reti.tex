@@ -591,16 +591,24 @@ Immaginiamo un client che voglia raggiungere www.eff.org. Esso dapprima contatta
 Esaminiamo più in dettaglio le varie classi di server DNS:
 \begin{itemize}
 	\item Root server: ne sono circa 400 in tutto il mondo e forniscono gli indirizzi IP dei TLD DNS Server
-	\item TLD server: Questi server si occupano dei domini di primo livello quali org, com, edu, it, fr ecc. Questi forniscono gli indirizzi IP dei server autoritativi
-	\item Server autoritativi: Ogni organizzazione dotata di host pubblicamente accessibili su Internet deve fornire record DNS pubblicamente accessibili che associno i nomi di tali host a indirizzi IP.
+	\item TLD server: Questi server si occupano dei domini di primo livello quali org, com, edu, it, fr ecc. Sa quali server sono autoritativi per i domini sotto quel TLD
+	\item Server autoritativi: Contiene gli indirizzi IP dei server per un determinato dominio.
 \end{itemize}
+
+\paragraph{Esempio} Si ipotizzi di voler risolvere www.example.com. 
+
+\begin{enumerate}
+	\item Il client chiede al root DNS server il TLD DNS che gestisce il top level domain .com
+	\item Il client chiede al TLD DNS server il DNS autoritativo che gestisce il dominio example.com
+	\item I client chiede al DNS autoritativo l'IP per www.example.com
+\end{enumerate}
 
 Esiste un altro tipo di server DNS detto DNS server locale, che non appartiene alla gerarchia di server sopra descritta. Ciascun ISP ha un proprio DNS server locale, fornito ai clienti che vi si connettono. Quando un host effettua una richiesta DNS, la query viene inviata al DNS server locale, che opera da proxy e inoltra la query alla gerarchia DNS.
 
-Il funzionamento per risolvere www.domain.it è il seguente:
+Ora vediamo più in dettaglio cosa avviene quando si tenta di risolvere www.domain.it
 \begin{enumerate}
 	\item L'utente invia una richiesta DNS al server locale
-	\item Il server locale inoltra la query al root server, che, vedendo che il TLD è .it, risponde con uno o più indirizzi IP appartenenti ai TLD server inerenti .it
+	\item Il server locale inoltra la query al root server, che, vedendo che il TLD è .it, risponde con uno o più indirizzi IP appartenenti ai TLD server che si occupano di .it
 	\item Il server locale, dunque, invia la richiesta a uno dei TLD server che risponde con uno o più indirizzi IP di DNS server autoritativo per domain.it
 	\item Il DNS server locale, annotato ciò, invia la richiesta a uno di questi, il quale risponde con l'indirizzo IP dell'hostname finale
 	\item Il DNS server locale inoltra questa informazione all'host richiedente.
@@ -620,18 +628,38 @@ In questo esempio si fa uso sia di query ricorsive che di query iterative. La ri
 In una concatenazione di richieste il server DNS che riceve una risposta da un altro server DNS può mettere in cache le informazioni ricevute, in modo che possa rispondere senza interrogare altri server e conseguentemente incrementare i ritardi. Dopo un determinato periodo di tempo i server DNS svuotano l'informazione ricevuta. Ad esempio un DNS server locale può memorizzare in cache l'indirizzo IP dei TLD DNS server, aggirando la richiesta ai root DNS server.
 
 \subsection*{2.4.3 Record e messaggi DNS}
-Il database DNS contiene i cosiddetti resource record, che sono restituiti alle richieste DNS.
+Un server DNS risponde con i cosiddetti resource record che sono così composti:
 
-
-Un record di risorsa contiene i seguenti campi: (Name, Value, Type, TTL).
-
-Il TTL è il time to live e indica quanto tempo residuo in cache prima di essere rimosso. Il significato di Name e Value dipende da Type.
+\texttt{(Name, Value, Type, TTL)}
+\\\\
+Il TTL è il time to live e indica il tempo residuo in cache prima di essere rimosso. Il significato di \texttt{Name} e \texttt{Value} dipende da \texttt{Type}.
 \begin{itemize}
-	\item Se Type=A allora Name è il nome dell'host e Value è il suo indirizzo IP. Pertando un record di tipo A fornisce la corrispondenza tra hostname e indirizzo IP
-	\item Se Type=NS allora Name è un dominio e Value è l'hostname del DNS server autoritativo [ma non era un IP???]
-	\item Se Type=CNAME allora Name è l'alias e Value è il nome canonico
-	\item Se Type=MX allota Value è il nome canonico di un mail server che ha Name come alias (???? allora è uguale a CNAME ????)
+	\item Se \texttt{Type=A} allora \texttt{Name} è il nome dell'host e \texttt{Value} è il suo indirizzo IP. Pertando un record di tipo A fornisce la corrispondenza tra hostname e indirizzo IP. 
+	
+	\item Se \texttt{Type=NS} (Nameserver) allora \texttt{Name} è un dominio e \texttt{Value} è l'hostname del DNS server autoritativo per quel dominio
+	
+	\item Se \texttt{Type=CNAME} (Canonical Name) allora \texttt{Name} è l'alias e \texttt{Value} è il nome canonico
+	
+	\item Se \texttt{Type=MX} (Mail Exchange) allora \texttt{Value} è il nome canonico di un mail server che ha \texttt{Name} come alias. Può sembrare simile a \texttt{CNAME} ma ci sono importanti differenze: quest'ultimo non permette ad un alias di avere più nomi canonici, mentre \texttt{MX} lo permette per una questione di fail-over (cioè se un host identificato da un nome canonico non funziona, prova con un altro). Per questo motivo \texttt{Type=MX} permette anche di specificare una priorità di scelta.
 \end{itemize}
+
+\subsubsection*{Esempi}
+\paragraph{Type=A}
+\texttt{www.example.com.   3600   A     203.0.113.10} \\ (www.example.com è raggiungibile a 203.0.113.10)
+
+\paragraph{Type=NS}
+\texttt{example.com.       172800 NS    ns1.dns-host.net.} \\ (example.com è un dominio e ns1.dns-host.net è l'hostname del nameserver autoritativo per quel dominio)
+
+\paragraph{Type=NS}
+\texttt{blog.example.com.  300    CNAME  ghs.googlehosted.com.} \\ (blox.example.com è un alias per ghs.googlehosted.com)
+
+\paragraph{Type=MX}
+\texttt{example.com.       3600   MX    10  mx1.mailhost.net.} \\
+(Le email inviate a example.com devono essere inviate a mx1.mailhost.net con priorità 10. Potrebbe esserci un altro record per example.com con priorità 5. In quel caso le email verrebbero inviate prima a quello)
+
+Notare che quando interroghi un Root DNS server non ottieni di default l'indirizzo IP del TLD DNS. Allo stesso modo quando interroghi un TLD DNS non ottieni di default l'indirizzo IP del DNS autoritativo. Ciò comporta un'ulteriore query DNS per trovare l'IP di questi server. Per evitare una query aggiuntiva, nella stessa risposta i server possono includere nella sezione Additional gli A/AAAA dei nameserver indicati.
+
+Inoltre si noti che un TLD DNS è semplicemente un DNS autoritativo per il dominio .com (ad esempio). Inoltre vi possono essere server autoritativi per east.example.com e west.example.com che restituiscono record A per www.east.example.com e www.west.example.com, ovverosia possono esserci più di 3 server DNS sul cammino.
 
 Ogni server DNS autoritativo contiene un record A per un certo hostname ma anche un altro tipo di server DNS può contenere record A nella propria cache.
 

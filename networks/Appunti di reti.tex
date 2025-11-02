@@ -699,12 +699,18 @@ Facciamo le seguenti osservazioni:
 Mettendo insieme queste due osservazioni avremo che:
 
 $$ D_{cs} \geq MAX\left\{ \frac{NF}{u_{s}}, \frac{F}{d_{min}} \right \} $$
-Ciò fornisce un limite inferiore al tempo di distribuzione per l'architettura client-server. Per $N$ sufficientemente grande, il tempo di distribuzione minimo è dato dal termine $\frac{NF}{u_{s}}$ ciò implica che da un $N$ in poi, il tempo di distribuzione minimo aumenta linearmente con $N$.
 
-Adesso facciamo un'analisi analoga per l'architettura P2P. Denotiamo con $P_{1}$ il peer che all'inizio ha tutto il file, mentre gli altri non ce l'hanno. Quando un peer riceve alcune parti di questo file, può usare la propria capacità di upload per distribuire queste parti agli altri peer.
+Ciò fornisce un limite inferiore al tempo di distribuzione per l'architettura client-server ma è possbile che $D_{cs}$ sia esattamente la parte destra della disequazione? Assolutamente sì, ottenendo
 
-Facciamo le seguenti supposizioni, assolutamente analoghe alla controparte client-server:
-Sia $u_{s}$ la banda di upload del collegamento di accesso di $P_{1}$, $u_{i}$ la banda di upload del collegamento di accesso dell'i-esimo peer, $d_{i}$ la banda di download del collegamento di accesso dell'i-esimo peer, $F$ la dimensione in bit del file da trasferire e $N$ il numero di peer che vuole una copia del file. Ipotizziamo, inoltre, che il nucleo di Internet abbia banda superiore a qualunque $u$ e $d$: ciò implica che tutti i colli di bottiglia siano nelle reti di accesso.
+$$ D_{cs} = MAX\left\{ \frac{NF}{u_{s}}, \frac{F}{d_{min}} \right \} $$
+
+nel caso in cui nessun nodo stia occupando la propria banda per inviare/ricevere alti bit e che il cuore di Internet sia sufficientemente grande.
+
+ Per $N$ sufficientemente grande, il tempo di distribuzione è dato dal termine $\frac{NF}{u_{s}}$ ciò implica che da un $N$ in poi, il tempo di distribuzione minimo aumenta linearmente con $N$.
+
+
+
+Ora svolgiamo un’analisi analoga per l’architettura P2P, mantenendo le stesse ipotesi del modello client/server. La differenza è che, invece di un "server", consideriamo un peer che avvia la trasmissione ed è l’unico a possedere inizialmente il file che chiamiamo $P_{1}$.
 
 Ora facciamo le seguenti osservazioni:
 \begin{itemize}
@@ -716,7 +722,14 @@ Ora facciamo le seguenti osservazioni:
 Mettendo insieme queste considerazioni otteniamo che
 $$  D_{P2P} \geq MAX\left\{ \frac{F}{U_s}, \frac{F}{d_{min}}, \frac{NF}{u_{tot}} \right\}$$
 
-Si può dimostrare che ciò sempre minore di $D_{cs}$ per ogni $N \geq x$. Cioè da un punto in poi $D_{P2P} < D_{cs}$
+Si può dimostrare che è una disuguaglianza stretta, ovvero è possibile schedulare il trasferimento del file in modo tale che 
+
+
+$$  D_{P2P} = MAX\left\{ \frac{F}{U_s}, \frac{F}{d_{min}}, \frac{NF}{u_{tot}} \right\}$$
+
+La dimostrazioneè in un paper denominato "Peer-Assisted File Distribution: The Minimum Distribution Time (Rakesh Kumar, Keith W. Ross)". La dimostrazione mostra che la disuguaglianza è in effetti stretta. Suddetta dimostrazione è particolarmente laboriosa da un punto in poi e si preferisce darla per buona.
+
+Inoltre, si può dimostrare che $D_{P2P} < D_{cs}$ per ogni $N \geq x$, cioè da un numero di peer/client in poi il tempo di distribuzione minimo nell'architettura Peer to Peer è sempre minore dell'architettura Client/Server, per quanto veloce siano i calcolatori e le reti di quest'ultima.
 
 \subsubsection*{BitTorrent}
 BitTorrent è un protocollo P2P per la distirbuzione di file. L'insieme di tutti i peer che partecipano alla distribuzione di un particolare file è chiamato torrent. I peer in un torrent si scambiano l'un l'altro chunk di file di uguale dimensione.
@@ -783,6 +796,23 @@ Una semplice strategia consiste nell'assegnare a un client il cluster geografica
 
 Un secondo approccio determina il cluster migliore per un client basandosi sulle condizioni di traffico correnti effettuuando misure in tempo reale delle prestazioni tra i loro cluster e i client. Per esempio, facendo sondare periodicamente dai propri cluster tutti gli LDNS del mondo. Il problema di tale approccio è che molti LDNS sono configurati per non rispondere a tali richieste per non parlare della complessità della cosa.
 
+\chapter{Livello di trasporto}
+Il livello di trasporto fornisce la funzione di fornire servizi di comunicazione tra i processi applicativi in esecuzione su host differenti. Si tratta di estendere il servizio offerto dal livello di rete che invece fornisce servizi di comunicazione tra gli host.
+
+\section*{3.1 Introduzione e servizi a livello di trasporto}
+Un protocollo a livello di trasporto mette a disposizione una comunicazione logica tra processi applicativi su host differenti.
+
+Per comunicazione logica si intende, dal punto di vista dell'applicazione, che tutto proceda come se i processi fossero direttamente connessi perché non si preoccupano dei dettagli dell'infrastruttura.
+
+I protocolli a livello di trasporto sono implementati nei sistemi periferici e quindi non nei router della rete.
+
+Lato mittente, il livello di trasporto converte i messaggi che riceve da un processo applicativo in pacchetti a livello di trasporto detti segmenti, spezzando (se necessario) i messaggi in parti più piccole a aggiungendo informazioni header che a sua volta lo passa al livello di rete.
+
+I router agiscono solo sul datagramma senza esaminare i campi del segmento incapsulato al suo interno.
+
+\subsection*{3.1.1  Relazione tra i livelli di trasporto e la rete}
+
+Ribadiamo che un protocollo a livello di trasporto mette a disposizione una comunicazione logica tra processi che vengono eseguiti su host diversi (usando meccanismi interni di smistamento) mentre un protocollo a livello di rete fornisce comunicazione logica tra host (usando meccanismi interni di smistamento, quali il routing).
 
 
 

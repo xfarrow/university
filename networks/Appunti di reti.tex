@@ -814,6 +814,50 @@ I router agiscono solo sul datagramma senza esaminare i campi del segmento incap
 
 Ribadiamo che un protocollo a livello di trasporto mette a disposizione una comunicazione logica tra processi che vengono eseguiti su host diversi (usando meccanismi interni di smistamento) mentre un protocollo a livello di rete fornisce comunicazione logica tra host (usando meccanismi interni di smistamento, quali il routing).
 
+Un protocollo di trasporto non fornisce alcuna indicazione su come i messaggi siano trasferiti all'interno della rete. 
+
+Si noti che una rete può offrire più protocolli di trasporto ciascuno dei quali può offrire alle applicazioni di rete un servizio differente.
+
+\subsection*{3.1.2 Panoramica del livello di trasporto di Internet}
+Internet offre due protocolli di trasporto:
+\begin{itemize}
+	\item UDP (User Datagram Protocol): fornisce alle applicazioni non affidabile e non è orientato alla connessione. Fornisce un controllo degli errori molto semplice.
+	\item TCP (Transmission Control Protocol): È orientato alla connessione e offre un servizio affidabile. Offre, inoltre, un servizio di controllo della congestione regolando la velocità alla quale il lato mittente della connessione TCP immette traffico in rete
+\end{itemize}
+
+TCP offre servizio di trasporto dati affidabile anche quando il sottostante protocollo di rete non è affidabile, infatti quest'ultimo prevede un servizio "best effort" ovvero fa del suo meglio per consegnare i pacchetti tra host comunicanti ma non offre alcuna garanzia: nè che i pacchetti arrivino in ordine nè che arrivino affatto.
+
+Il principale compito di TCP e UDP è l'estensione del servizio di consegna di IP tra sistemi periferici a quello di consegna tra processi in esecuzione su sistemi periferici. Questa funzionalità è detta multiplexing o demultiplexing a seconda della direzione.
+
+\section*{3.2 Multiplexing e demultiplexing}
+Il multiplexing e il demultiplexing sono i metodi con cui il servizio di trasporto da host a host fornito dal livello di rete diventa un servizio di trasporto da processo a processo.
+
+Nell'host destinatario il livello di trasporto riceve segmenti dal livello di rete immediatamente sottostante. Il livello di trasporto ha il compito di consegnare i dati di questi segmenti al processo applicativo appropriato. In realtà non consegna i dati direttamente al processo ma piuttosto alla socket che funge da intermediario. Siccome a ogni dato istante possono esserci più socket sull'host di ricezione, ciascuna avrà un identificatore univoco.
+
+Il compito di trasportare i dati dei segmenti a livello di trasporto verso la giusta socket viene detto demultiplexing. Viceversa, il compito di radunare dati da diverse socket e incapsulare ognuno con intestazioni a livello di trasporto per creare segmenti da passare al livello di rete viene detto multiplexing (CAPIRE O SCRIVERE MEGLIO).
+
+Gli identificatori univoci delle socket vengono dette porte, composti da 16 bit. I numeri da 0 a 1023 sono chiamati numeri di porta noti e sono riservati per essere usati da protocolli applicativi ben noti (es. HTTP sulla porta 80).
+
+Quando un segmento arriva all'host di destinazione, il protocollo a livello di trasporto esamina il numero della porta di destinazione e dirige il segmento verso la socket corrispondente.
+
+Generalmente il lato client usa un numero casuale di porta mentre lato server si assegna un numero di porta specifico perché non vi è necessità di un numero di porta mittente specifico; infatti, il numero di porta di origine serve solo a specificare un indirizzo di ritorno. Si immagini che A voglia instaurare una connessione HTTP con B: allora A contatta B sulla porta 80 e mette nell'intestazione del segmento un numero di porta di origine casuale. Il server B, quando vuole rispondere ad A, farà assumere il valore del numero di porta di destinazione il numero di porta di origine che aveva ricevuto. 
+
+\subsubsection*{Multiplexing e demultiplexing non orientati alla connessione (UDP)}
+Una socket UDP ricevente viene identificata completamente da una coppia che consiste di un indirizzo IP ricevente e un numero di porta ricevente.
+
+\subsubsection*{Multiplexing e demultiplexing orientati alla connessione (TCP)}
+Una differenza tra una socket UDP e una TCP risiede nel fatto che quest'ultima, a differenza della socket UDP, è identificata da quattro parametri: indirizzo IP di origine, porta di origine, indirizzo IP di destinazione, porta di destinazione. Eccezion fatta per i segmenti TCP che trasportano la richiesta per stabilire la connessione.
+
+Ne consegue che lato ricevente, a fronte di tutti i parametri che restano uguali tranne l'inidirzzo IP o numero di porta mittente, i pacchetti verrano rediretti a un altro processo.
+
+L'host server può ospitare più socket TCP contemporaneamente, ognuna identificata da una specifica quaterna di valori.
+
+\subsubsection*{Web Server e TCP}
+Non sempre esiste una corrispondenza uno a uno tra le socket e i processi. Infatti, si possono avere più socket collegate allo stesso processo.
+
+
+
+
 
 
 

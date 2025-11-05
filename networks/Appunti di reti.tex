@@ -954,6 +954,7 @@ Ecco le FSM di RDT 2.0:
 	\caption{RDT 2.0}
 \end{figure}
 
+Quando il lato mittente riceve \texttt{rdt\_send(data)} costruisce un pacchetto come avviene per RDT 1.0 ma con la differenza che stavolta vi aggiunge un checksum e invia tale pacchetto tramite \texttt{udt\_send(sndpkt)} dopodiché si mette in attesa di risposta di un ACK o di un NAK.
 
 
 

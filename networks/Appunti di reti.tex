@@ -11,6 +11,7 @@
 \geometry{a4paper, margin=1in}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\usepackage{float} 
 \renewcommand{\contentsname}{Indice}
 % Redefine the caption format to remove "Figure" and the number
 \captionsetup[figure]{labelformat=empty}
@@ -854,6 +855,107 @@ L'host server può ospitare più socket TCP contemporaneamente, ognuna identific
 
 \subsubsection*{Web Server e TCP}
 Non sempre esiste una corrispondenza uno a uno tra le socket e i processi. Infatti, si possono avere più socket collegate allo stesso processo.
+
+\section*{3.3 Trasporto non orientato alla connessione: UDP}
+Un livello di trasporto deve quantomeno fornire un servizio di multiplexing e demultiplexing al fine di trasferire i dati tra il livello di rete e il processo corretto a livello di applicazione.
+
+A parte questa funzionalità e un controllo molto semplice sugli errori, UDP non aggiunge nient'altro a IP. Infatti, prende i messaggi dal processo applicativo, aggiunge il numero di porta di origine e destinazione e passa il segmento risultante al livello di rete sottostante. Se il segmento arriva a destinazione, UDP utilizza il numero di porta di destinazione per consegnare i dati al processo applicativo corretto. In UDP, inoltre, non vi è handshaking.
+
+Perché preferire UDP, che non offre molto, rispetto a TCP? La risposta è che molte applicazioni sono più adatte con UDP per i seguenti motivi:
+\begin{itemize}
+	\item Controllo più fine a livello di applicazione su quali dati sono inviati e quando: nonappena un processo applicativo passa dei dati a UDP, questi li impacchetta in un segmento che trasferisce immediatamente al livello di rete. TCP, invece, introduce in meccanismo di controllo della congestione che ritarda l'invio. Inoltre quest'ultimo manda continuamente segmenti sulla rete fin quando la destinazione non ha notificato l'avvenuta ricezione. TCP poi effettua un handshake, mentre UDP no e per tale motivo non introduce alcun ritardo nello stabilire una nuova connessione. Dato che le applicazioni in tempo reale spesso richiedono una velocità minima di trasmissione, non sopportano ritardi ma sopportano piccole perdite, TCP mal si adatta a quest'ultime.
+	\item Nessun stato di connessione: TCP mantiene lo stato della connessione nei sistemi periferici. Inoltre conserva anche buffer di ricezione e di invio, parametri per il controllo della congestione e parametri sul numero di sequenza e di acknowledgment. UDP, invece, non conserva lo stato della connessione e non tiene traccia di alcun parametro e pertanto risulta più leggero.
+	\item Minor spazio usato per l'intestazione del segmento: l'intestazione TCP aggiunge 20 byte mentre UDP ne aggiunge 8.
+\end{itemize}
+
+È interessante notare che le applicazioni possono ottenere, volendo, un trasferimento affidabile anche su UDP se tale algoritmo è insito nel protocollo applicazione anziché quello di trasporto. Questo permette ai processi applicativi di poter comunicare in modo affidabile senza essere soggetti ai vincoli di TCP.
+
+\subsection*{3.3.1 Struttura dei segmenti UDP}
+In un segmento UDP ci sono 5 campi:
+\begin{itemize}
+	\item Numero di porta di origine
+	\item Numero di porta di destinazione
+	\item Lunghezza: numero di byte del segmento UDP (intestazione + dati)
+	\item Checksum: serve per controllare se sono avvenuti errori. Più dettagli in seguito
+	\item Dati: i dati dell'applicazione vengono conservati qui
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/UDP_packet_structure.png}
+	\caption{Struttura di un segmento UDP}
+\end{figure}
+
+\subsection*{Checksum UDP}
+Il checksum in UDP viene utilizzato per determinare se i bit del segmento UDP sono stati alterati durante il loro trasferimento.
+
+Il mittente effettua il complemento a 1 della somma di tutte le parole da 16 bit e conserva tale dato nel campo checksum (in altre parole suddivide l'intero segmento in porzioni da 16 bit, ne fa la somma e ne salva all'interno il complemento a uno [gli 0 diventano 1 e gli 1 diventano 0]). Il ricevente usa il complemento per verificare che il risultato della somma tra le somme delle parole che ha ricevuto e il complemento nel pacchetto faccia 111....
+Se c'è almeno uno zero allora si è verificato un errore.
+
+Ci si potrebbe chiedere perché UDP metta a disposizione un checksum se i protocolli a livello di collegamento (Ethernet, Wifi ecc) facciano lo stesso. I motivi sono sostanzialmente due: (1) non c'è garanzia che tutti i collegamenti sul percorso controllino gli errori e (2) l'errore si potrebbe verificare mentre il segmento è dentro un router.
+
+Sebbene UDP metta a disposizione tale funzionalità, non fa nulla per risolvere le situazioni di errore.
+
+\section*{3.4 Principi del trasferimento dati affidabile}
+Con un canale affidabile nessun bit dei dati trasferiti viene corrotto o va perso e tutti i bit sono consegnati nell'ordine di invio.
+
+Il compito di un protocollo di trasferimento dati affidabile è quello di implementare questo canale anche se il protocollo al livello inferiore è inaffidabile. Ad esempio TCP è un protocollo di trasferimento affidabile implementato al di sopra di IP, notoriamente inaffidabile.
+
+\subsection*{3.4.1 Costruzione di un protocollo di trasferimento dati affidabile}
+
+Svilupperemo delle Finite State Machines di un protocollo di trasferimento dati affidabile. Assumeremo che i pacchetti vengano consegnati nell'ordine in cui sono stati inviati, sebbene alcuni possano venir persi o danneggiati.
+
+Il lato mittente del protocollo verrà invocato tramite una chiamata \texttt{rdt\_send} ("rdt" sta per Reliable Data Transfer) e invocherà \texttt{udt\_send} ("udt" sta per Unreliable Data Transfer) del protocollo sottostante. Quando un pacchetto raggiungerà il lato ricevente, verrà invocato \texttt{rdt\_rcv} e passerà i dati al livello superiore tramite \texttt{deliver\_data}. Senza mancare di generalità ma semplificando il discorso tratteremo solo il caso di un trasferimento \textbf{dati} unidirezionale. Si noti che mittente e destinatario abbiano comunque bisogno di scambiarsi informazioni di \textbf{controllo} in entrambe le direzioni.
+
+La teoria sviluppata in queste pagine si applica alla reti di calcolatori in generale e non solo al livello di trasporto e per tale motivo abbiamo usato il termine generale "pacchetto" anziché "segmento".
+
+\subsubsection*{Trasferimento dati affidabile su un canale perfettamente affidabile: RDT 1.0}
+Innanzitutto tratteremo il caso più semplice, in cui il canale sottostante è completamente affidabile, ovverosia \texttt{udt\_send} è già di per sè affidabile. Il protocollo che svilupperemo, denominato RDT 1.0 è banale.
+
+Prima di procedere allo sviluppo dell'algoritmo facciamo le seguenti osservazioni:
+
+\begin{itemize}
+	\item Esistono due FSM separate, una per il mittente e una per il destinatario
+	\item Lo stato iniziale di una FSM è indicato da una freccia tratteggiata
+	\item L'evento che causa la transizione è scritto sopra una linea orizzontale posta sulla freccia di transizione mentre le azioni intraprese a seguito di tale evento sono scritte sotto la linea orizzontale
+	\item Quando un evento non determina un'azione e quando un'azione viene scaturita senza un evento useremo la lettera $\Lambda$ sotto la linea orizzontale per denotare la mancanza di un'azione e sopra la linea orizzontale per denotare la mancanza di un evento
+\end{itemize}
+
+La FSM per RDT 1.0 è molto semplice:
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/rdt_1.0.png}
+	\caption{RDT 1.0}
+\end{figure}
+
+
+Ciò sta a significare che quando viene invocata \texttt{rdt\_send} lato mittente, quest'ultimo crea un pacchetto con i dati (\texttt{data}) ottenuti dall'alto e invia il pacchetto sul canale dati "inaffidabile" (che in questo caso è affidabile) tramite \texttt{udt\_send(packet)}
+
+Lato ricevente, viene invocato \texttt{rdt\_rcv}. Il destinatario non deve far altro che estrarre i dati dal pacchetto e inviarli al livello superiore.
+
+\subsubsection*{Trasferimento dati affidabile su un canale con errori sui bit: RDT 2.0}
+Adesso ipotizziamo che il canale sottostante possa corrompere i bit, ma non perdere l'intero pacchetto.
+
+Immaginiamo cosa accadrebbe con due persone al telefono: il ricevente potrebbe dire "OK" dopo ogni messaggio che sente chiaramente, mentre dirà "puoi ripetere?" se non ha sentito chiaramente. Questo protocollo "vocale" utilizza notifiche (acknwoledgment) positive e negative che ci torneranno utili nello sviluppo nel nostro protocollo RDT 2.0.
+
+I protocolli di trasferimento dati affidabile basati su ritrasmissioni sono noti come protocolli ARQ (automatic repeat request).
+
+I protocolli ARQ devono avere tre funzionalità aggiuntive:
+\begin{itemize}
+	\item Rilevamento dell'errore
+	\item Feedback del destinatario: il destinatario deve dare un feedback esplicito al mittente che può essere positivo (ACK) o negativo (NAK)
+	\item Ritrasmissione: Un pacchetto ricevuto con errori sarà ritrasmesso dal mittente quando quest'ultimo riceve un NAK
+\end{itemize}
+
+Ecco le FSM di RDT 2.0:
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{images/rdt_2.0.png}
+	\caption{RDT 2.0}
+\end{figure}
+
+
+
 
 
 

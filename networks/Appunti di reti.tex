@@ -11,6 +11,7 @@
 \geometry{a4paper, margin=1in}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\usepackage{enumitem}
 \usepackage{float} 
 \renewcommand{\contentsname}{Indice}
 % Redefine the caption format to remove "Figure" and the number
@@ -941,7 +942,7 @@ Immaginiamo cosa accadrebbe con due persone al telefono: il ricevente potrebbe d
 I protocolli di trasferimento dati affidabile basati su ritrasmissioni sono noti come protocolli ARQ (automatic repeat request).
 
 I protocolli ARQ devono avere tre funzionalità aggiuntive:
-\begin{itemize}
+\begin{itemize}[noitemsep, topsep=0pt]
 	\item Rilevamento dell'errore
 	\item Feedback del destinatario: il destinatario deve dare un feedback esplicito al mittente che può essere positivo (ACK) o negativo (NAK)
 	\item Ritrasmissione: Un pacchetto ricevuto con errori sarà ritrasmesso dal mittente quando quest'ultimo riceve un NAK
@@ -954,7 +955,11 @@ Ecco le FSM di RDT 2.0:
 	\caption{RDT 2.0}
 \end{figure}
 
-Quando il lato mittente riceve \texttt{rdt\_send(data)} costruisce un pacchetto come avviene per RDT 1.0 ma con la differenza che stavolta vi aggiunge un checksum e invia tale pacchetto tramite \texttt{udt\_send(sndpkt)} dopodiché si mette in attesa di risposta di un ACK o di un NAK.
+Quando il lato mittente riceve \texttt{rdt\_send(data)} costruisce un pacchetto come avviene per RDT 1.0 ma con la differenza che stavolta vi aggiunge un checksum e invia tale pacchetto tramite \texttt{udt\_send(sndpkt)} dopodiché si mette in attesa di risposta di un ACK o di un NAK. Se riceve NAK rinvia il pacchetto e rimane in attesa, altrimenti ritorna nello stato iniziale.
+
+Il destinatario, quando riceve il pacchetto controlla la correttezza del pacchetto. Se sono presenti errori crea un pacchetto NAK e lo invia al mittente, altrimenti gli manda un ACK e trasferisce i dati al livello superiore.
+
+Si noti come quando il mittente è in attesa di una risposta dal destinatario non può ricevere una chiamata dal protocollo superiore \texttt{rdt\_send} e conseguentemente non può inviare un nuovo pacchetto. Protocolli di questo genere vengono chiamati protocolli stop-and-wait.
 
 
 

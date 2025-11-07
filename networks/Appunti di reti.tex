@@ -959,7 +959,42 @@ Quando il lato mittente riceve \texttt{rdt\_send(data)} costruisce un pacchetto 
 
 Il destinatario, quando riceve il pacchetto controlla la correttezza del pacchetto. Se sono presenti errori crea un pacchetto NAK e lo invia al mittente, altrimenti gli manda un ACK e trasferisce i dati al livello superiore.
 
-Si noti come quando il mittente è in attesa di una risposta dal destinatario non può ricevere una chiamata dal protocollo superiore \texttt{rdt\_send} e conseguentemente non può inviare un nuovo pacchetto. Protocolli di questo genere vengono chiamati protocolli stop-and-wait.
+Si noti come quando il mittente è in attesa di una risposta dal destinatario non può ricevere una chiamata \texttt{rdt\_send} e conseguentemente non può inviare un nuovo pacchetto. Protocolli di questo genere vengono chiamati protocolli stop-and-wait.
+
+Il protocollo RDT 2.0 presenta però un grave problema, infatti, non si è tenuto conto della possibilità che i pacchetti ACK o NAK possano a loro volta essere alterati. Prendiamo allora in esame tre possibilità per gestire i pacchetti di acknowledgment corrotti:
+\begin{enumerate}
+	\item Continuando con la nostra analogia telefonica, se chi detta non comprende il messaggio "OK" o il messaggio "puoi ripetere?" da parte del destinatario, probabilmente risponderà con "che cosa hai detto?". Ma se anche quest'ultimo venisse corrotto allora il destinatario potrebbe rispondere con "che cosa hai detto TU?" che a sua volta potrebbe essere corrotto. Tale approccio risulterebbe complicato
+	\item Potremmo aggiungere bit di checksum ai messaggi di acknowledgment che non solo rilevano, ma correggono anche gli errori. Questo però risolverebbe il problema di un ACK o NAK corrotto ma non perso
+	\item Un terzo approccio prevede che il mittente riinvi il pacchetto dati corrente a seguito di un pacchetto ACK o NAK alterato. Questo approccio potrebbe introdurre pacchetti nella rete duplicati in quanto il destinatario potrebbe aver mandato semplicemente un ACK e quindi con tale approccio riceverebbe due pacchetti uguali di seguito, ma non può sapere se il secondo è un nuovo pacchetto o se si tratti di una ritrasmissione. Per ovviare a ciò si può numerare ogni pacchetto con un numero di sequenza.
+\end{enumerate}
+
+Creiamo quindi RDT 2.1: al destinatario sarà sufficiente controllare il numero di sequenza per capire se il pacchetto ricevuto rappresenti o meno una ritrasmissione. Nel primo caso il numero di sequenza del pacchetto avrà lo stesso valore di uno appena ricevuto, nel secondo caso sarà invece diverso. Per questo semplice protocollo stop-and-wait ci basta un solo bit per conservare il numero di sequenza.
+Dato che stiamo ipotizzando che la rete non perda pacchetti, il mittente saprà sempre che un ACK o NAK (alterato oppure no) farà sempre riferimento all'ultimo pacchetto inviato
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{images/rdt_sender_2.1.png}
+	\caption{RDT 2.1 Mittente}
+\end{figure}
+
+Questa FSM è molto simile a RDT 2.0 ma ha il doppio degli stati per gestire il numero di sequenza 0 e 1, che sono l'un l'altro speculari. L'unica cosa che cambia, infatti, è \texttt{make\_pkt} Dopo ogni invio di pacchetto sulla rete, reinvia lo stesso pacchetto se riceve NAK o un ACK corrotto (e lui non sa che è un ACK).
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{images/rdt_receiver_2.1.png}
+	\caption{RDT 2.1 Destinatario}
+\end{figure}
+
+\begin{itemize}
+	\item (A) Pacchetto corrotto; invia NAK
+	\item (B) Pacchetto duplicato (has\_seq sarebbe dovuto essere 0); invia ACK
+	\item (C) Pacchetto numero 0 ricevuto con successo, manda ACK e manda i dati al protocollo superiore
+	\item (D) Pacchetto corrotto; invia NAK
+	\item (E) Pacchetto duplicato (has\_seq sarebbe dovuto essere 1); invia ACK
+	\item (F) Pacchetto numero 1 ricevuto con successo, manda ACK e manda i dati al protocollo superiore
+\end{itemize}
+
+\subsubsection*{Trasferimento dati affidabile su un canale con perdite ed errori sui bit}
 
 
 

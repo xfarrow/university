@@ -994,7 +994,126 @@ Questa FSM è molto simile a RDT 2.0 ma ha il doppio degli stati per gestire il 
 	\item (F) Pacchetto numero 1 ricevuto con successo, manda ACK e manda i dati al protocollo superiore
 \end{itemize}
 
-\subsubsection*{Trasferimento dati affidabile su un canale con perdite ed errori sui bit}
+\subsubsection*{Trasferimento dati affidabile su un canale con perdite ed errori sui bit: rdt 3.0}
+Supponiamo ora che il canale di trasmissione, oltre a danneggiare i pacchetti, possa anche perderli.
+
+Il protocollo deve preoccuparsi ora di due aspetti aggiuntivi: come rilevare lo smarrimento di pacchetti e cosa fare quando ciò avviene. Per gestire il primo problema assegneremo al mittente l'onere di rilevare e risolvere la perdita di pacchetti. Supponiamo che il mittente spedisca un pacchetto dati e che questo oppure l'acknowledgment di ritorno vada smarrito. In entrambi i casi il mittente non otterrà alcuna risposta da parte del destinatario. Se il mittente è disposto ad attendere un tempo sufficiente per essere certo dello smarrimento del pacchetto, può semplicemente ritrasmettere il pacchetto dati.
+Notiamo che il mittente potrebbe ritrasmettere un pacchetto perché esso o l'ACK di ritorno ha sperimentato un ritardo notevolmente lungo ma non è andato perso. Ciò introduce la possibilità di pacchetti duplicati. Dunque il mittente non sa se un pacchetto  dati sia andato perduto, se sia stato smarrito un ACK o se uno dei due ha semplicemente subito un ritardo. In tutti questi casi l'azione intrapresa è sempre la stessa: ritrasmettere.
+
+Questo meccanismo richiede di introdurre quindi un timer in grado di segnalare al mittente l'avvenuta scadenza di un dato lasso di tempo. Il mittente dovrà quindi essere in grado di (1) inizializzare il contatore ogni volta che invia un pacchetto (sia che si tratti di un primo invio sia che si tratti di una ritrasmissione) (2) di rispondere a un interrupt generato dal timer con l'azione appropriata e (3) di fermare il contatore.
+
+\subsection*{3.4.2 Protocolli per il trasferimento dati affidabile con pipeline}
+RDT 3.0 funziona ma si tratta di un protocollo stop-and-wait e pertanto molto lento.
+
+Per valutarne la velocità supponiamo l'esistenza di due host il cui RTT di andata e ritorno sia 30 millisecondi. Supponiamo, inoltre, che il canale ha un tasso trasmissivo di 1Gbps e che si vogliano trasferire 8000bit.
+
+Il tempo per trasmettere i bit sul collegamento è
+$$ \frac{L}{R} = \frac{8000 bit}{10^9 bit/s} = 8 \ microsecondi $$
+
+L'ultimo bit entra sul canale a tempo 8 micros ed effettua un viaggio di 15ms verso il destinatario. Avremo quindi che il destinatario riceverà l'ultimo bit a tempo
+$$ t = \frac{RTT}{2} + \frac{L}{R} = 15.008ms $$
+
+Per semplicità supponiamo che il tempo di trasmissione (L/R) di un pacchetto ACK sia trascurabile. L'ACK giunge al mittente all'istante
+$$t = \frac{RTT}{2} + \frac{L}{R} + \frac{RTT}{2} = 30.008ms$$
+
+Quindi in un arco di 30.008ms il mittente ha trasmesso per soli 0.008ms. Definiamo l'utilizzo del mittente come il seguente rapporto:
+$$ \frac{0.008}{30.008} = 0.00027$$
+
+Quindi il mittente è stato attivo per un solo 0,27\% del tempo. Visto in altro modo, il mittente è stato in grado di spedire solo 1000byte in 30.008s con un throughput effettivo di soli 267kbps sebbene il canale mettesse a disposizione 1Gbps. Inoltre abbiamo trascurato i tempi di elaborazione e di accodamento sui router intermedi che avrebbero ridotto ancora di più le prestazioni.
+
+Per tale motivo anziché operare in modalità stop and wait, si consente al mittente di inviare più pacchetti senza attendere gli acknowledgment. Questa tecnica è nota come pipelining.
+
+Le conseguenze su un protocollo di trasporto sono le seguenti:
+\begin{itemize}
+	\item L'intervallo dei numeri di sequenza deve essere incrementato in quanto ci possono essere più pacchetti in transito
+	\item Il mittente dovrà avere un buffer in cui memorizza i pacchetti trasmessi ma di cui non ha ancora avuto esito
+	\item Si possono identificare due approcci di base: Go-Back-N e ripetizione selettiva
+\end{itemize}
+
+\subsection*{3.4.3 Go-Back-N (GBN)}
+In un protocollo GBN il mittente può trasmettere più pacchetti senza dover attendere alcun acknowledgment ma non può avere più di N pacchetti in attesa di acknowledgment. N viene chiamato ampiezza della finestra. 
+ 
+Se definiamo \texttt{base} come il numero di sequenza del pacchetto più vecchio che non ha ancora ricevuto esito e \texttt{nextseqnum} il numero di sequenza del prossimo pacchetto da inviare, possiamo identificare quattro intervalli:
+\begin{enumerate}
+	\item I pacchetti con numero di sequenza \texttt{[0, base-1]} sono i pacchetti già trasmessi e che hanno ricevuto acknowledgment.
+	\item I pacchetti con numero di sequenza \texttt{[base, nextseqnum-1]} sono i pacchetti inviati ma che non hanno ricevuto ACK
+	\item I numeri di sequenza nell'intervallo \texttt{[nextseqnum, base+N-1]} possono essere utilizzati per i pacchetti da inviare immediatamente
+	\item I numeri di sequenza con un numero superiore a \texttt{base+N-1} non possono essere utilizzati fintantoché il mittente non riceva uno o più ACK dei pacchetti nella pipeline ancora privi di riscontro.
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{images/gbn.png}
+	\caption{Visione del mittente sulla pipeline GBN}
+\end{figure}
+
+Il protocollo GBN viene detto protocollo a finestra scorrevole.
+
+Il numero di sequenza è scritto in un campo di $k$ bit e dunque sono possibili $2^k$ numeri di sequenza (da 0 a $2^k-1$). Tutte le operazioni aritmetiche che coinvolgono il numero di sequenza dovanno essere in modulo $2^k$ (ovvero dopo il valore $2^k-1$ viene $0$).
+
+Il mittente GBN deve rispondere a tre tipi di evento:
+\begin{enumerate}
+	\item Invocazione dall'alto: quando dall'alto si chiama \texttt{rdt\_send()} come prima cosa controlla se la finestra sia piena, ossia se vi siano N pacchetti in sospeso senza acknowledgment.
+	\item Ricezione di un ACK: nel protocollo GBN l'ACK del pacchetto con numero di sequenza n verrà considerato come un acknlowledgment cumulativo che indica che tutti i pacchetti con numero di sequenza minore o uguale a n sono stati correttamente ricevuti
+	\item Quando si verifica un timeout il mittente invia nuovamente tutti i pacchetti trasmessi e non riscontrati. Se si riceve un ACK ma ci sono ancora pacchetti in sospeso in attesa di ackwnowledgment il timer viene fatto ripartire.
+\end{enumerate}
+
+Le azioni del destinatario GBN sono semplici: Se un pacchetto con numero di sequenza n viene correttamente ricevuto ed è in ordine, il destinatario manda un ACK per quel pacchetto. In tutti gli altri casi il destinatario scarta i pacchetti e rimanda un ACK per il pacchetto corretto ed in ordine ricevuto più di recente. Per induzione se un pacchetto $k$ è stato ricevuto in ordine e corretto, tutti i pacchetti con numero inferiore a $k$ sono stati anch'essi ricevuti correttamente ed in ordine.
+
+Si noti che un pacchetto senza errori ma non in ordine viene scartato e ciò può sembrare un'operazione sciocca da fare, ma vi è una buona ragione: supponiamo che sia atteso il pacchetto $n$ ma che arrivi il pacchetto $n+1$. Il destinatario potrebbe momentaneamente mettere in un buffer $n+1$ e consegnarlo al livello superiore solo dopo aver ricevuto $n$. Ma il mittente, non avendo avuto riscontro su $n$, stando alle regole di GBN, invia sia $n$ sia $n+1$ quindi il destinatario può semplicemente scartare quest'ultimo.
+
+L'unica informazione che il destinatario deve memorizzare è il numero di sequenza del pacchetto che si aspetta.
+
+\subsection*{3.4.4 Ripetizione selettiva (SR)}
+Esistono scenari in cui GBN ha problemi di prestazioni ad esempio quando nella pipeline si trovano numerosi pacchetti e un errore su uno può provocare un elevato numero di ritrasmissioni, molte delle quali non necessarie che possono saturare la banda. I protocolli a ritrasmissione selettiva evitano le ritrasmissioni non necessarie facendo ritrasmettere al mittente solo quei pacchetti su cui esistono sospetti di errore (smarriti o alterati).
+
+Si userà di nuovo una finestra di dimensione $N$ ma stavolta si consentirà a dei pacchetti all'interno della finestra di essere marcati come ACK'd. Inoltre, anche il destinatario avrà una sua finestra della stessa dimensione.
+
+Il mittente ha un timer per ogni pacchetto che invia, ritrasmettendolo qualora non riceva un ACK nel tempo stabilito.
+
+La finestra si muove in avanti verso il primo pacchetto non ancora ACK'd o non ancora usato quando riceve un ACK per \texttt{base}
+
+Il destinatario invia un ACK per i pacchetti ricevuti sia in ordine sia fuori sequenza (che memorizzerà in un buffer fin quando non arrivino i pacchetti con numero di sequenza minore).
+
+Se il destinatario si aspetta il pacchetto $n$ e arriva correttamente il pacchetto $n$, la finestra si muove in avanti di 1. Se il destinatario si aspetta il pacchetto $n$ e arriva $n+t$, memorizza $n+t$ nel buffer ma non sposta avanto la finestra. La sposterà solo quando arrivano tutti i pacchetti da $n$ a $n+t$ (\texttt{base assumerà il valore di $n+t+1$}).
+
+Le finestre del mittente e del destinatario potrebbero non coincidere, caso in cui il destinatario invia un ACK e quindi la sua finestra si sposta, ma non arriva al mittente. È pertanto fondamentale che $N$ sia minore o uguale ai numeri possibile di sequenza in quanto se ciò non fosse il caso si verrebbero a creare delle incomprensioni.
+
+Nei documenti digitali allegati vi è una cartella denominata "SelectiveRepeatProtocol" nel quale è presente una simulazione interattiva.
+
+\section*{3.5 Trasporto orientato alla connessione: TCP}
+TCP si basa su molti dei principi precedentemente trattati.
+
+\subsection*{3.5.1 Connessione TCP}
+TCP viene detto orientato alla connessione in quanto prima di effettuare lo scambio di dati si effettuta un handshake, ossia i processi sugli host devono inviarsi reciprocamente alcuni segmenti preliminari per stabilire i parametri del successivo trasferimento dati.
+
+Dato che il protocollo TCP è presente solo sui sistemi periferici, i router intermedi sono completamente ignari delle connessioni TCP: essi vedono datagrammi, non connessioni.
+
+TCP offre un servizio full duplex: i dati a livello applicazione possono fluire dal processo A al processo B nello stesso momento in cui fluiscono nella direzione opposta. Una connessione TCP, inoltre, è anche punto-a-punto ovvero ha luogo tra un singolo mittente e un singolo destinatario. Il multicast non è possibile.
+
+Vediamo come si instaura questo handshake: il client invia per primo uno speciale segmento TCP, il server risponde con un secondo segmento speciale TCP, infine il client risponde con un terzo segmento speciale. I primi due non trasportano payload mentre al terzo è consentito. Dato che gli host si scambiano tre segmenti, questa procedura è nota come handhsking a tre vie.
+
+Una volta instaurata una connessione TCP, i due processi possono scambiarsi dati. Il primo manda un flusso dati verso la socket, la quale, quando riceve i dati, li dirige al buffer di invio allocato durante l'handshaking da cui preleverà blocchi dati e li passerà al livello rete.
+
+Anche lato ricevente c'è un buffer che viene utilizzato per leggere i dati in ricezione.
+
+La dimensione massima di segmento (MSS) è la massima quantità di dati a livello di applicazione all'interno del segmento (intestazioni TCP escluse). In altre parole è la dimensione massima di un payload TCP. L'MSS viene impostato determinado la lunghezza massima del frame più grande che può essere inviato a livello di collegamento, nota come Unità Trasmissiva Massima (MTU). Si sceglie una MSS tale per cui MSS + intestazioni TCP + intestazioni IP sia minore o uguale a MTU. Si sceglie quindi che un segmento TCP stia tutto in un datagramma IP e che un datagramma IP stia tutto in un singolo frame a livello di collegamento per questioni di efficienza e affidabilità. Quando il livello applicazione manda dati più grandi di MSS, TCP suddivide i pacchetti in modo che rispettino la dimensione massima.
+
+\subsection*{3.5.2 Struttura dei segmenti TCP}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{images/tcp_segment_structure.png}
+	\caption{Struttura di un segmento TCP}
+\end{figure}
+
+Il segmento TCP consiste di campi intestazione (header) e di un campo contenente un blocco di dati proveniente dal livello applicazione (payload) di dimensione massima MSS.
+
+L'intestazione contiene i numeri di porta di origine e destinazione, il campo checksum, il numero di sequenza e il numero di acknowledgment. Abbiamo inoltre il campo finestra di ricezione per il controllo del flusso che indica il numero di byte che il destinatario è disposto ad accettare, le opzioni che sono facoltative, il campo lunghezza dell'intestazione che indica la dimensione dell'header che al variare del numero di opzioni varia la dimensione e 6 campi flag.
+
+
+
+
+
 
 
 

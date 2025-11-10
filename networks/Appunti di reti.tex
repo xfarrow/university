@@ -799,6 +799,8 @@ Una semplice strategia consiste nell'assegnare a un client il cluster geografica
 Un secondo approccio determina il cluster migliore per un client basandosi sulle condizioni di traffico correnti effettuuando misure in tempo reale delle prestazioni tra i loro cluster e i client. Per esempio, facendo sondare periodicamente dai propri cluster tutti gli LDNS del mondo. Il problema di tale approccio è che molti LDNS sono configurati per non rispondere a tali richieste per non parlare della complessità della cosa.
 
 \chapter{Livello di trasporto}
+
+\textbf{\textit{QUESTO CAPITOLO RICHIEDE IMPORTANTI RIVISITAZIONI E APPROFONDIMENTI}}\\\\\\
 Il livello di trasporto fornisce la funzione di fornire servizi di comunicazione tra i processi applicativi in esecuzione su host differenti. Si tratta di estendere il servizio offerto dal livello di rete che invece fornisce servizi di comunicazione tra gli host.
 
 \section*{3.1 Introduzione e servizi a livello di trasporto}
@@ -1110,13 +1112,61 @@ Il segmento TCP consiste di campi intestazione (header) e di un campo contenente
 
 L'intestazione contiene i numeri di porta di origine e destinazione, il campo checksum, il numero di sequenza e il numero di acknowledgment. Abbiamo inoltre il campo finestra di ricezione per il controllo del flusso che indica il numero di byte che il destinatario è disposto ad accettare, le opzioni che sono facoltative, il campo lunghezza dell'intestazione che indica la dimensione dell'header che al variare del numero di opzioni varia la dimensione e 6 campi flag.
 
+\subsubsection*{Numeri di sequenza e numeri di acknowledgment}
+TCP vede i dati a livello applicazione come un flusso di byte ordinati ma non strutturati.
+
+Il numero di sequenza contenuto in un pacchetto è il numero del primo byte contenuto in esso. Facciamo un esempio: ipotizziamo ci sia un flusso da 500.000 byte e che MSS sia 1000 byte e che il primo byte sia numerato con zero. Allora TCP costruirà 500 segmenti i cui numeri di sequenza saranno 0, 1000, 2000, ...
+In realtà i numeri di sequenza non partono sempre da zero, infatti, mittente e destinatario usano un numero casuale come numero iniziale per evitare che segmenti attinenti a vecchie connessioni TCP tra gli stessi host ancora in rete possano essere interpretati come segmenti validi e pertanto mandare in confusione la trasmissione.
 
 
+Il numero di acknowledgment che l'host A scrive nei propri segmenti è il numero di sequenza del byte successivo che l'host A attende dall'host B.
 
+\begin{itemize}
+	\item Se B manda ad A 1000 byte, il prossimo segmento di A avrà un numero di acknowledgment di 1001
+	\item Se B banda ad A 3 segmenti ma A riceve solo il primo e l'ultimo, allora A continuerà a mettere 1001 nel prossimo segmento che invierà a B.
+\end{itemize}
 
+Dato che TCP effettua l'acknowledgment dei byte fino all'ultimo byte che ha nel flusso, si dice che TCP offre acknowledgment cumulativi.
 
+C'è una coppia (numero di sequenza, numero di acknowledgment) per il mittente e una coppia (numero di sequenza, numero di acknowledgment) per il destinatario, dato che la connessione è full-duplex.
 
+Che cosa fa un host quando riceve segmenti fuori sequenza? RFC non impone nulla a riguardo pertanto chi implementa il protocollo TCP ha due strade:
+\begin{enumerate}
+	\item Il destinatario scarta immediatamente i segmenti non ordinati
+	\item Il destinatario mantiene i byte non ordinati in un buffer e attende qualli mancanti per colmare i vuoti.
+\end{enumerate}
 
+\subsubsection*{Telnet: un caso studio}
+Telnet è un protocollo a livello applicazione impiegato per il login remoto TCP ed è un'applicazione interattiva.
+
+Ogni carattere immesso dall'utente client viene spedito all'host remoto il quale lo rimanda indietro e che solo alla sua ricezione sul client verrà mostrato sul monitor del mittente. Sembrerebbe un'operazione inutile ma questo "eco" permette di assicurarsi che i caratteri visibili all'utente siano stati ricevuti e processati dall'host remoto. Pertanto nel lasso di tempo che intercorre tra la digitazione di un carattere e la sua visualizzazione sul monitor, il carattere ha viaggiato nella rete due volte.
+
+Ipotizziamo una comunicazione telnet tra Host A e Host B: quest'ultimi si acordano per usare, rispettivamente, numero di sequenza iniziale 42 e 79.
+Ecco cosa avviene:
+\begin{enumerate}
+	\item Il mittente manda la tripla \texttt{(Seq=42, Ack=79, data='C')} che significa "il primo byte in questo messaggio ha numero di sequenza 42 e mi aspetto da te un segmento con numero di sequenza 79. Invio il carattere 'C'.
+	\item Il destinatario risponde con la tripla \texttt{(Seq=79, Ack=43, data='C')}. Questo segmento ha un duplice obiettivo: confermare l'avvenuta ricezione del primo segmento (acknowledgment) e trasportare dati al client. Per questo motivo si dice che l'acknowledgment è "piggybacked"
+	\item Il mittente conferma l'avvenuta ricezione del segmento con la coppia \texttt{(Seq=43, Ack=80)}. Qui anche se l'acknowledgment non è piggybacked (ovvero non trasporta dati), Seq va avanti di uno per indicare al server che questo è un segmento nuovo.
+\end{enumerate}
+
+\subsection*{3.5.3 Timeout e stima del tempo di andata e ritorno}
+TCP utilizza un meccanismo di timeut per recuperare i segmenti persi. Chiaramente, il timeout dovrebbe essere più grande del tempo di andata e ritorno sulla connessione (RTT). Ma di quanto deve essere maggiore? E come stimare RTT?
+
+\subsubsection*{Stima del tempo di andata e ritorno}
+L'RTT misurato per un segmento, denotato come \texttt{SampleRTT} è la quantità di tempo che intercorre tra l'istante in cui il segmento viene passato a IP e quello della ricezione del suo acknowledgment.
+
+\texttt{SampleRTT} viene valutato per ogni segmento non ritrasmesso.
+
+Per effettuare una stima dell'RTT medio si usa la seguente formula, calcolata per ogni \texttt{SampleRTT}:
+$$ \texttt{EstimatedRTT} = (1-\alpha) \times EstimatedRTT + \alpha \times SampleRTT $$ dove $\alpha$ è una costante fissa il cui valore raccomandato è 0,125.
+
+Tale media attribuisce maggiore importanza ai campioni recenti rispetto a quelli vecchi. Ciò è naturale in quanto ciò riflette la congestione attuale della rete. Tale media viene definita media mobile esponenziale ponderata.
+
+Oltre ad avere una stima di RTT vorremmo avere anche una misura della sua variabilità che denoteremo come \texttt{DevRTT} come una stima di quanto \texttt{SampleRTT} generalmente si discosta da \texttt{EstimatedRTT}. La formula è la seguente:
+
+$$\texttt{DevRTT} = (1 - \beta) \times \texttt{DevRTT} + \beta \times |\texttt{SampleRTT} - \texttt{EstimatedRTT}|$$
+
+che è simile alla formula precedente: con $\beta \times |\texttt{SampleRTT} - \texttt{EstimatedRTT}|$ vede quanto si discosta \texttt{SampleRTT} da \texttt{EstimatedRTT} e vi applica un fattore $\beta$ generalmente di 0,25.
 
 
 

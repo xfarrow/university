@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Debian) (preloaded format=pdflatex 2025.10.18)  9 NOV 2025 21:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Debian) (preloaded format=pdflatex 2025.10.18)  10 NOV 2025 23:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -460,7 +460,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 637--641
 [23 <./images/dns_query_example.png>] [24] [25] [26] [27] [28]
 Capitolo 3.
 
-Overfull \hbox (1.50514pt too wide) in paragraph at lines 819--820
+Underfull \hbox (badness 10000) in paragraph at lines 803--805
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 803--805
+
+ []
+
+
+Overfull \hbox (1.50514pt too wide) in paragraph at lines 821--822
 []\OT1/cmr/m/n/10 Un pro-to-collo di trasporto non for-nisce al-cuna in-di-cazi
 one su come i mes-saggi siano trasfer-iti all'interno
  []
@@ -468,59 +478,59 @@ one su come i mes-saggi siano trasfer-iti all'interno
 [29
 
 ] [30]
-<images/UDP_packet_structure.png, id=119, 596.2275pt x 464.73625pt>
+<images/UDP_packet_structure.png, id=120, 596.2275pt x 464.73625pt>
 File: images/UDP_packet_structure.png Graphic file (type png)
 <use images/UDP_packet_structure.png>
 Package pdftex.def Info: images/UDP_packet_structure.png  used on input line 88
-6.
+8.
 (pdftex.def)             Requested size: 226.48395pt x 176.53069pt.
  [31 <./images/UDP_packet_structure.png>]
-<images/rdt_1.0.png, id=124, 813.0375pt x 734.745pt>
+<images/rdt_1.0.png, id=125, 813.0375pt x 734.745pt>
 File: images/rdt_1.0.png Graphic file (type png)
 <use images/rdt_1.0.png>
-Package pdftex.def Info: images/rdt_1.0.png  used on input line 928.
+Package pdftex.def Info: images/rdt_1.0.png  used on input line 930.
 (pdftex.def)             Requested size: 226.48395pt x 204.67332pt.
  [32]
-<images/rdt_2.0.png, id=128, 865.2325pt x 790.955pt>
+<images/rdt_2.0.png, id=129, 865.2325pt x 790.955pt>
 File: images/rdt_2.0.png Graphic file (type png)
 <use images/rdt_2.0.png>
-Package pdftex.def Info: images/rdt_2.0.png  used on input line 954.
+Package pdftex.def Info: images/rdt_2.0.png  used on input line 956.
 (pdftex.def)             Requested size: 452.9679pt x 414.08691pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [33 <./images/rdt_1.0.png>] [34 <./images/rdt_2.0.png>]
-<images/rdt_sender_2.1.png, id=135, 940.51375pt x 615.29875pt>
+<images/rdt_sender_2.1.png, id=136, 940.51375pt x 615.29875pt>
 File: images/rdt_sender_2.1.png Graphic file (type png)
 <use images/rdt_sender_2.1.png>
-Package pdftex.def Info: images/rdt_sender_2.1.png  used on input line 976.
+Package pdftex.def Info: images/rdt_sender_2.1.png  used on input line 978.
 (pdftex.def)             Requested size: 452.9679pt x 296.33524pt.
-<images/rdt_receiver_2.1.png, id=136, 1066.98625pt x 561.09625pt>
+<images/rdt_receiver_2.1.png, id=137, 1066.98625pt x 561.09625pt>
 File: images/rdt_receiver_2.1.png Graphic file (type png)
 <use images/rdt_receiver_2.1.png>
-Package pdftex.def Info: images/rdt_receiver_2.1.png  used on input line 984.
+Package pdftex.def Info: images/rdt_receiver_2.1.png  used on input line 986.
 (pdftex.def)             Requested size: 452.9679pt x 238.20161pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [35 <./images/rdt_sender_2.1.png>] [36 <./images/rdt_receiver_2.1.png>]
-<images/gbn.png, id=144, 962.59625pt x 234.8775pt>
+<images/gbn.png, id=145, 962.59625pt x 234.8775pt>
 File: images/gbn.png Graphic file (type png)
 <use images/gbn.png>
-Package pdftex.def Info: images/gbn.png  used on input line 1046.
+Package pdftex.def Info: images/gbn.png  used on input line 1048.
 (pdftex.def)             Requested size: 452.9679pt x 110.52504pt.
  [37] [38 <./images/gbn.png>]
-<images/tcp_segment_structure.png, id=152, 1023.825pt x 800.9925pt>
+<images/tcp_segment_structure.png, id=153, 1023.825pt x 800.9925pt>
 File: images/tcp_segment_structure.png Graphic file (type png)
 <use images/tcp_segment_structure.png>
 Package pdftex.def Info: images/tcp_segment_structure.png  used on input line 1
-105.
+107.
 (pdftex.def)             Requested size: 362.37569pt x 283.50488pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [39]
-[40 <./images/tcp_segment_structure.png>] (./Appunti di reti.aux)
+[40 <./images/tcp_segment_structure.png>] [41] (./Appunti di reti.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -529,34 +539,35 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 5799 strings out of 476091
- 93919 string characters out of 5794080
+ 5804 strings out of 476091
+ 93976 string characters out of 5794080
  1866330 words of memory out of 5000000
- 26109 multiletter control sequences out of 15000+600000
- 522863 words of font info for 72 fonts, out of 8000000 for 9000
+ 26112 multiletter control sequences out of 15000+600000
+ 523558 words of font info for 75 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  57i,12n,63p,946b,335s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.p
-fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr
-/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsl10.pfb></usr/share/texlive
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf
--dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/f
-onts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf/fonts/type1/public/cm-supe
-r/sfrm1000.pfb>
-Output written on "Appunti di reti.pdf" (40 pages, 726243 bytes).
+t/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr1
+2.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmsl10.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sf
+rm1000.pfb>
+Output written on "Appunti di reti.pdf" (41 pages, 746137 bytes).
 PDF statistics:
- 234 PDF objects out of 1000 (max. 8388607)
- 144 compressed objects within 2 object streams
+ 242 PDF objects out of 1000 (max. 8388607)
+ 149 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  51 words of extra memory for PDF output out of 10000 (max. 10000000)
 

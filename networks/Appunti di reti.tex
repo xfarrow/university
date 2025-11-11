@@ -1168,6 +1168,55 @@ $$\texttt{DevRTT} = (1 - \beta) \times \texttt{DevRTT} + \beta \times |\texttt{S
 
 che è simile alla formula precedente: con $\beta \times |\texttt{SampleRTT} - \texttt{EstimatedRTT}|$ vede quanto si discosta \texttt{SampleRTT} da \texttt{EstimatedRTT} e vi applica un fattore $\beta$ generalmente di 0,25.
 
+\subsubsection*{Impostazione e gestione del timeout di ritrasmissione}
+Dati i valori di \texttt{EstimatedRTT} e \texttt{DevRTT}, quale valore dovremmo usare per il timeout di TCP? Non può chiaramente essere minore di \texttt{EstimatedRTT} altrimenti si verrebbero a creare trasmissioni non necessarie nè tantomento dovrebbe essere molto maggiore di tale valore altrimenti TCP non ritrasmetterebbe rapidamente un segmento perduto.
+
+Si dovrebbe pertanto impostare il timeout a \texttt{EstimatedRTT} più un certo margine che dovrebbe essere grande quando c'è molta variabilità di \texttt{EstimatedRTT}, piccolo altrimenti. La formula che si usa è:
+$$ \texttt{TimeoutInterval} = \texttt{ExtimatedRTT} + 4 \times \texttt{DevRTT} $$
+
+Il valore iniziale di \texttt{TimeoutInterval} è pari a 1. \textbf{Dire che il valore viene raddoppiato quando si perde un pacchetto? Non ho capito}
+
+\subsection*{3.5.4 Trasferimento dati affidabile}
+Il livello rete non è affidabile: non garantisce la consegna, né la consegna in sequenza e né l'integrità dei dati.
+
+TCP crea un servizio di trasporto dati affidabile al di sopra del servizio inaffidabile del livello di rete, assicurando che il flusso di byte che il processo ricevente leggerà dal buffer è esattamente quello spedito, ovvero senza alterazioni, buchi, duplicazioni e in sequenza.
+
+Con i precedenti algoritmi teorici assegnavamo un timer per ogni segmento trasmesso per cui non si sia ricevuto ancora un acknowledgment ma TCP utilizza un solo timer di ritrasmissione, anche in presenza di più segmenti senza acknowledgment. Lo si può pensare come un timer associato al segmento più vecchio che non ha ancora ricevuto acknowledgment.
+
+Esistono tre eventi che un mittente TCP deve gestire:
+\begin{enumerate}
+	\item Dati provenienti dall'applicazione: TCP li incapsula in uno o più segmenti che vengono successivamente passati a IP
+	\item Timeout: quando si verifica un timeout, TCP risponde con il segmento che lo ha causato e successivamente resetta il timer. In altre parole ritrasmette il segmento con il più basso numero di sequenza di cui non si è ancora ricevuto l'ACK
+	\item Arrivo del segmento di acknowledgment: TCP confronta il valore contenuto nell'ACK con la propria variabile \texttt{Base} che rappresenta il numero di sequenza del più vecchio byte che non ha ancora ricevuto un acknowledgment. Conseguentemente \texttt{Base - 1} è il numero di sequenza dell'ultimo byte che si sa essere stato ricevuto correttamente. TCP usa acknowledgment cumulativi: Pertanto un ACK \texttt{y} conferma la ricezione di tutti i byte precedenti al byte numero \texttt{y}. A questo punto se ci sono altri segmenti in attesa di acknowledgment riavvia il timer altrimenti lo ferma.
+\end{enumerate}
+
+\subsubsection*{Raddoppio dell'intervallo di timeout}
+Ogni volta che scatta un timer, TCP imposta il successivo intervallo di timeout al doppio del tempo del precedente anziché derivarlo da \texttt{EstimatedRTT} e \texttt{DevRTT}. Il timer viene reimpostato al suo valore normale dopo uno degli altri due eventi posisbili ((1) e (3)).
+
+Ciò consente di iniziare a creare un piccolo controllo della congestione in quanto ciascun mittente ritrasmette dopo intervalli sempre più lunghi, rispettando la rete.
+
+\subsubsection*{Ritrasmissione rapida}
+Il mittente può in molti casi rilevare la perdita dei pacchetti ben prima che si verifichi l'evento di timeout grazie agli ACK duplicati. Dobbiamo innanzitutto capire perché esistono ACK duplicati.
+
+Quando il destinatario TCP rileva un buco nel flusso dei dati (ovvero un segmento mancante), il destinatario non può inviare un NAK esplicito per questi segmenti al mittente in quanto TCP non prevede ciò ma manda un ACK relativo all'ultimo byte che ha ricevuto correttamente e in ordine, duplicando così un ACK.
+
+Nel caso in cui siano giunti tre ACK duplicati, il mittente effettua una cosiddetta ritramissione rapida, rispendendo il segmento mancante prima della scadenza del timer.
+
+Queste sono le azioni intraprese dal server TCP:
+\begin{enumerate}
+	\item Arrivo di un segmento con numero di sequenza atteso. Tutti i segmenti fino a questo sono già stati riscontrati: attende 500ms per l'arrivo ordinato di un altro segmento. Se non arriva manda un ACK (ciò consente di avere un ACK cumulativo)
+	\item Arrivo di un segmento con numero di sequenza atteso. C'è un segmento ordinato in attesa di trasmissione dell'ACK (caso 1): Invia immediatamente un ACK cumulativo per entrambi. Caso 1 e caso 2 insieme fanno sì che possano esistere ACK cumulativi ma al massimo per due segmenti insieme.
+	\item Arrivo non ordinato di segmento con numero di sequenza superiore a quello atteso (viene rilevato un buco): Invia immediatamente un ACK duplicato relativo all'ultimo byte correttamente ricevuto.
+	\item Arrivo di segmento che colma parzialmente o completamente un buco: Invia un ACK per questo segmento solo se colma l'estremo sinistro di un buco, altrimenti invia un ACK duplicato relativo all'ultimo byte ricevuto in ordine.
+\end{enumerate}
+
+\subsubsection*{GBN o SR?}
+TCP è un protocollo GBN o SR? Si presenta come un ibrido tra i due.
+
+\subsection*{3.5.5 Controllo di flusso}
+
+
+
 
 
 

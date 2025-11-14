@@ -1214,7 +1214,40 @@ Queste sono le azioni intraprese dal server TCP:
 TCP è un protocollo GBN o SR? Si presenta come un ibrido tra i due.
 
 \subsection*{3.5.5 Controllo di flusso}
+Se l'applicazione ricevente è troppo lenta nella lettura dei dati dal buffer può accadere che il mittente mandi in overflow il buffer di ricezione del destinatario, inviando dati troppo rapidamente. Per questo motivo è necessario un servizio di controllo di flusso che fortunatamente è offerto da TCP. Gli algoritmi di controllo di flusso confrontano la velocità di invio del mittente con quella di lettura del destinatario.
 
+Inoltre la rete Internet potrebbe essere congestionata (indipendentemente dalle condizioni del buffer del ricevente) e pertanto TCP mette a disposizione il controllo della congestione.
+
+Benché il controllo di flusso e il controllo della congestione risultino simili, facendo in modo che il mittente rallenti, sono causate da ragioni diverse.
+
+Trattiamo brevemente il controllo di flusso TCP, supponendo che il destinatario scarti sempre i segmenti arrivati non in ordine. L'algoritmo è implementato facendo mantenere al mittente una variabile chiamata finestra di ricezione che gli fornisce dettagli sullo spazio libero disponibile nel buffer del destinatario. Anche il destinatario per lo stesso motivo mantiene la sua finestra di ricezione.
+
+Entrambi gli host allocheranno un buffer di dimensione \texttt{RcvBuffer}. Inoltre avremo \texttt{LastByteRead} che è il numero dell'ultimo byte nel flusso dati che il processo applicativo ha letto dal buffer e \texttt{LastByteRcvd} rappresenta il numero dell'ultimo byte arrivato dalla rete salvato nel buffer. Avremo dunque che la seguente disuguaglianza deve essere sempre soddisfatta per evitare un overflow:
+$$ \texttt{LastByteRcvd} - \texttt{LastByteRead} \leq  \texttt{RcvBuffer} $$
+
+La finestra di ricezione, denotata con \texttt{rwnd} rappresenta la quantità disponibile nel buffer:
+$$ \texttt{rwnd} = \texttt{RcvBuffer} - (\texttt{LastByteRcvd} \texttt{LastByteRead})  $$
+
+Il valore di \texttt{rwnd} viene messo nel campo apposito del segmento inviato da un host all' altro.
+
+Vengono memorizzate ulteriori variabili: \texttt{LastByteSent} che rappresenta il numero dell'ultimo byte del flusso inviato e \texttt{LastByteAcked} che rappresenta l'ultimo byte per cui si è ricevuto un acknowledgment. Ma allora $\texttt{LastByteSent} - \texttt{LastByteAcked}$ rappresenta quanti dati ci sono nel buffer dell'altro host. Per tale motivo chi invia dati deve mentenere la seguente disuguaglianza sempre vera:
+$$ \texttt{LastByteSent}_{\texttt{mittente}} - \texttt{LastByteAcked}_{\texttt{mittente}} \leq \texttt{rwnd}_{\texttt{destinatario}} $$
+
+Vediamo che cosa succede quando \texttt{rwnd = 0} nell'host destinatario B e che non abbia ACK o altri dati da inviare al mittente A. Mano a mano il buffer di B si svuoterà ma poiché B non ha nulla da inviare ad A (e quindi non può far pervenire il nuovo valore di \texttt{rwnd}) e A non manda segmenti a B perché nota che la finestra è piena, ci troveremo in una situazione di stallo. Per ovviare a ciò le specifiche TCP impongono che sebbene \texttt{rwnd} sia zero, il mittente continui a mandare segmenti con un byte di dati. In questo caso se il buffer è pieno vengono semplicemente scartati, ma quando avrà iniziato a svuotarsi, manderà un ACK contenente il nuovo valore di \texttt{rwnd}.
+
+\subsection*{3.5.6 Gestione della connessione TCP}
+Vediamo come viene stabilita e rilasciata una connessione TCP. Fare ciò può aggiungere ritardi.
+
+Quando la parte client TCP vuole aprire una connessione con la corrispondente parte server, questi sono i passi intrapresi:
+\begin{enumerate}
+	\item TCP lato client invia uno speciale segmento TCP al server che non contiene dati a livello applicativo, ma il bit SYN è posto a 1. Per tale motivo questo segmento viene chiamato segmento SYN. Inoltre il client sceglie a caso un numero di sequenza iniziale (\texttt{client\_isn}) e lo pone nel campo numero di sequenza
+	\item Il server alloca il buffer e le variabili necessarie e invia un segmento di connessione approvata al client. Anche questo segmento ha il campo SYN impostato a 1 e non contiene dati a livello applicativo. Inoltre, sceglie il proprio numero di sequenza iniziale (\texttt{server\_isn}) e imposta ACK al valore \texttt{client\_isn+1}. Questo segmento viene chiamato SYNACK
+	\item Alla ricezione del segmento SYNACK, anche il client alloca variabili e buffer e invia al server un altro segmento che contiene nel campo ACK il valore \texttt{server\_isn+1} e il valore 0 nel campo SYN (d'ora in poi assumerà sempre questo valore). Il campo dati del segmento può contenere dati del livello applicazione (piggybacking).
+\end{enumerate}
+
+Una volta completati questi tre passi, client e server possono scambiarsi segmenti contenenti dati effettivi. Dato che questo handshake richiede tre passi, viene detto handshake a tre vie.
+
+Ciascuno dei due processi che partecipa alla connessione può terminarla. In tal caso le risorse sugli host vengono deallocate.
 
 
 

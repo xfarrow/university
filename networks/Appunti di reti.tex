@@ -1247,7 +1247,15 @@ Quando la parte client TCP vuole aprire una connessione con la corrispondente pa
 
 Una volta completati questi tre passi, client e server possono scambiarsi segmenti contenenti dati effettivi. Dato che questo handshake richiede tre passi, viene detto handshake a tre vie.
 
-Ciascuno dei due processi che partecipa alla connessione può terminarla. In tal caso le risorse sugli host vengono deallocate.
+Ciascuno dei due processi che partecipa alla connessione può terminarla. In tal caso le risorse sugli host vengono deallocate. Per far sì che la connessione termini, uno dei due host (diciamo host A) invia un segmento speciale con il bit FIN impostato a 1 a host B. Quando B riceve il segmento, invia un segmento ACK, immediatamente seguito da un ulteriore segmento con bit FIN a 1. Infine A manda a sua volta un ACK e la connessione termina.
+
+Nell'arco di una connessione TCP, i protocolli attraversano vari stati: il client TCP parte dallo stato "closed" quando non vi è alcuna connessione TCP in esecuzione per poi passare allo stato "SYN sent" una volta spedito il segmento SYN. Ricevuto l'ACK dal server, lo stato del protocollo client passa a "estabilished", stato che permette di inviare e ricevere dati utili.
+Supponendo che l'applicazione client decida di voler chiudere la connessione, esso spedisce il segmento FIN al server e passa allo stato "FIN wait 1" che diventa "FIN wait 2" quando riceve l'ACK dal server. Quando riceve FIN e invia l'ultimo ACK passa nello stato "Time wait" in cui vi si inserisce per qualche secondo prima di ritornare allo stato "closed" nel quale dealloca tutte le risorse. Lo stato "Time wait" serve affinché il client abbia abbastanza tempo per ritentare l'invio dell'ultimo ACK nel caso vada perduto.
+
+Se un host riceve un segmento TCP la cui porta di destinazione non corrisponde ad alcuna socket in ascolto, quest'host invierà al mittente un segmento speciale con il bit RST (reset) impostato a 1 che comunica alla controparte di non rispedire lo stesso segmento.
+Nel caso di UDP, invece, il destinatario manda uno speciale datagramma ICMP.
+
+
 
 
 

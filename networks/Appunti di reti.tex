@@ -1255,8 +1255,95 @@ Supponendo che l'applicazione client decida di voler chiudere la connessione, es
 Se un host riceve un segmento TCP la cui porta di destinazione non corrisponde ad alcuna socket in ascolto, quest'host invierà al mittente un segmento speciale con il bit RST (reset) impostato a 1 che comunica alla controparte di non rispedire lo stesso segmento.
 Nel caso di UDP, invece, il destinatario manda uno speciale datagramma ICMP.
 
+\section*{3.6 Princìpi del controllo di congestione}
+La ritrasmissione dei pacchetti tratta il sintomo della congestione della rete (la perdita di quest'ultimi causati da un buffer overflow nei router) ma non la causa (il tentativo di una o più sorgenti di inviare dati a ritmi troppo elevati). Per questo motivo sono richiesti meccanismi per adeguare l'attività dei mittenti in relazione al traffico.
 
+\section*{3.6.1 Cause e costi della congestione}
+Il libro fa una serie di esempi che mostrano alcune cause che incrementano la congestione della rete:
+\begin{itemize}
+	\item Avere un throughput vicino alla velocità massima del collegamento di uscita del router potrebbe sembrare ideale dal punto di vista del throughput ma non dal punto di vista del ritardo. Infatti più ci si avvicina al limite del collegamento più saranno lunghi i ritardi di accodamento e quindi la congestione aumenta.
+	\item Il mittente deve effettuare delle ritrasmissioni quando i pacchetti vengono scartati. Questa è sia una causa della congestione della rete (più pacchetti immessi = più congestione), ma anche una conseguenza (più la rete è congestionata più è probabile che alcuni pacchetti vengono persi). Inoltre se il timer del mittente scatta prematuramente, immette nella rete un pacchetto in più che non era necessario inviare. Ciò causa ulteriore congestione.
+	\item Si ipotizzi un pacchetto che attraversa N router che viene scartato dall'N-esimo a causa di un buffer pieno. Allora il lavoro svolto, nonché la banda utilizzata, dei precedenti N-1 router è stata sprecata e conseguentemente aiuta ad aumentare la congestione della rete (vengono elaborati e inviati pacchetti che verranno successivamente scartati)
+\end{itemize}
 
+\subsection*{3.6.2 Approcci al controllo della congestione}
+Esistono due approcci per controllare la congestione:
+\begin{itemize}
+	\item Controllo di congestione end-to-end: se i router intermedi non forniscono supporto esplicito al controllo della congestione, quest'ultimo deve essere gestito sui sistemi periferici, osservando il comportamento della rete. Questo è proprio il caso della rete Internet, di cui TCP si fa carico (in quanto il livello rete non offre tale supporto)
+	\item Controllo di congestione assistito dalla rete: I router forniscono un feedback esplicito al mittente sullo stato della congestione della rete.
+\end{itemize}
+
+\section*{3.7 Controllo di congestione TCP}
+TCP offre il meccanismo di controllo della congestione, imponendo a ciascun mittente un limite alla velocità di invio sulla propria connessione in funzione della congestione di rete percepita.
+
+Per fare questo, TCP fa tener traccia agli estremi della connessione una variabile aggiuntiva chiamata finestra di congestione, indicata con \texttt{cwnd}. Ricordandoci della variabile \texttt{rwnd} precedentemente menzionata, si avrà che TCP imporrà che la seguente diseguaglianza risulti sempre soddisfatta:
+$$ \texttt{LastByteSent} - \texttt{LastByteAcked} \leq min\{\texttt{cwnd}, \texttt{rwnd}\} $$
+
+ricordandosi che \texttt{LastByteSent} - \texttt{LastByteAcked} equivale al numero di byte inviati ma di cui non si è ricevuto alcun acknowledgment.
+
+Assumiamo che \texttt{rwnd} sia sufficientemente grande da essere ignorata e assumiamo che il mittente abbia sempre dati da inviare. Notiamo dunque che possono essere inviati al massimo \texttt{cwnd} byte di cui certamente non si può ricevere l'ACK in meno di RTT secondi. Ciò implica che il massimo della velocità trasmissiva è $\frac{\texttt{cwnd}}{RTT}$ byte/s. Ciò dimostra che modificando il valore di \texttt{cwnd} il mittente può regolare la velocità di invio sulla propria connessione.
+
+La congestione viene rilevata tramite un "evento di perdita", ovverosia l'occorrenza o di un timeout o di una ricezione di tre ACK duplicati (e quindi quattro ACK identici). Queste due condizioni sono diretta conseguenza di un congestionamento di rete perché sia il ritardo che la perdita di un segmento (quest'ultimo dovuto a un overflow del buffer di qualche router intermedio) sono dovuti a un congestionamento. TCP risponde a tale evento con una riduzione dell'ampiezza della finestra di congestione.
+
+D'altro canto quando un mittente riceve degli ACK non duplicati, interpreta ciò come un'indicazione che tutto vada bene e che la rete non è congestionata. TCP risponde aumentando l'ampiezza della finestra di congestione.
+
+La strategia di TCP è quello di incrementare la velocità di trasmissione in risposta all'arrivo di ACK finché non si verifica un evento di perdita che causa una riduzione della velocità di trasmissione. A questo punto la velocità di trasmissione viene nuovamente incrementata per rilevare a che tasso trasmissivo iniziano a verificarsi perdite. Cerca pertanto un punto di equilibrio tra la domanda e l'offerta della rete.
+
+Per il comportamento di TCP sopracitato, si dice che TCP è auto-temporizzato.
+
+L'algoritmo di congestione di TCP presenta tre componenti: (1) slow start, (2) congestion avoidance e (3) fast recovery
+
+\subsubsection*{Slow start}
+Quando si stabilisce una connessione TCP, il valore di \texttt{cwnd} viene impostato a 1 MSS e si incrementa di 1 MSS ogniqualvolta un segmento trasmesso riceve un ACK. Questo processo ha come effetto una velocità di trasmissione iniziale lenta per poi crescere esponenzialmente.
+
+Cresce esponenzialmente perché dopo la ricezione di un ACK del primo segmento trasmesso potrà trasmetterne due, dopodiché potrà trasmetterne 4,8,16 e così via.
+
+Adesso vediamo cosa succede quando c'è un evento di perdita:
+\begin{itemize}
+	\item Se l'evento di perdita è stato causato da un timeout, TCP imposta la variabile \texttt{ssthresh} (slow start threshold) a $\texttt{cwnd}/2$ (metà del valore di quando è stata rilevata la congestione) e pone il valore di \texttt{cwnd} di nuovo pari a 1 MSS e il processo inizia da capo. Quando \texttt{cwnd} raggiunge il valore \texttt{ssthresh}, anziché raddoppiare di nuovo (e quindi raggiungere di nuovo il valore in cui si era verificato un timeout), la fase di slow start termina e TCP va in modalità congestion avoidance.
+	\item Se vengono rilevati tre ACK uguali, TCP effettua una ritrasmissione rapida (subsection 3.5.4) ed entra nella modalità fast recovery.
+\end{itemize}
+
+\subsubsection*{Congestion avoidance}
+Quando TCP entra in modalità congestion avoidance, il valore di \texttt{cwnd} è la metà di quello che aveva l'ultima volta in cui è stata rilevata la congestione, quindi invece di raddoppiare \texttt{cwnd} a ogni RTT, lo incrementa di 1 MSS a ogni RTT, assumendo un andamento lineare anziché esponenziale.
+
+Congestion avoidance termina nei seguenti casi:
+\begin{itemize}
+	\item Se l'evento di perdita è stato causato da un timeout, si comporta allo stesso modo di Slow Start
+	\item In caso di tre ACK duplicati, la rete continua a consegnare pacchetti, pertanto la risposta di TCP è meno drastica: imposta il valore \texttt{ssthresh} a  $\texttt{cwnd}/2$ e successivamente dimezza il valore di \texttt{cwnd} per poi entrare nello stato di fast recovery.
+\end{itemize}
+
+\subsubsection*{Fast recovery}
+Durante la fase di fast recovery il valore di \texttt{cwnd} è incrementato di 1 MSS per ogni ACK duplicato ricevuto relativamente al segmento perso che ha causato l'entrata di TCP in modalità fast recovery.
+
+\begin{itemize}
+	\item Quando arriva un ACK per il segmento perso, TCP entra nello stato di congestion avoidance dopo aver ridotto il valore di \texttt{cwnd}
+	\item Se si verifica un timeout vi è invece una transizione dallo stato di fast recovery a quello di slow start, intraprendendo le stesse azioni di Congestion avoidance e Slow Start: \texttt{ssthresh} è posto a metà di \texttt{cwnd} prima che quest'ultimo venga impostato a 1 MSS
+\end{itemize}
+
+L'algoritmo di congestione TCP svolge la funzione di un algoritmo distribuito di ottimizzazione asincrona.
+
+\subsubsection*{Descrizione macroscopica del throughput TCP}
+Ignoriamo le fasi di slow start che generalmente durano poco in quanto il mittente aumenta esponenzialmente le sue trasmissioni.
+
+Sia $W$ il numero di byte quando si verifica un evento di perdita. Allora il throughput massimo è $W/RTT$ e quello minimo è $\frac{W}{2}/RTT = W/2RTT$ e quindi il throughput medio è
+$$0,75 \times \frac{W}{R}$$
+
+\subsection*{3.7.1 Fairness}
+Consideriamo $K$ connessioni TCP attraverso un collegamento con capacità trasmissiva di $R$ bps. Si dice che un meccanismo di controllo della congestione sia fair se la velocità trasmissiva media di ciascuna connessione sia $R/K$ bps. In altre parole, ciascuna connessione ottiene la stessa porzione di banda del collegamento.
+
+TCP tende a offrire ciò (si può dimostrare), pertanto è fair.
+
+\subsubsection*{Fairness e UDP}
+La fonia e la videoconferenza non fanno uso di TCP: anche a costo di perdere qualche pacchetto, preferiscono che la loro banda non venga limitata anche se la rete è molto congestionata.
+
+UDP pertanto non è fair e non coopera con i meccanismi anti-congestionamento di TCP. Ciò implica che il traffico UDP può soffocare il traffico TCP.
+
+\subsubsection*{Fairness e connessioni TCP parallele}
+Benché TCP sia fair, nulla impedisce a un processo di aprire più connessioni TCP parallele, di fatto aumentando il throughput medio dello stesso durante un congestionamento.
+
+\subsection*{Notifica esplicita di congestione: controllo di congestione assistito dalla rete}
+Un mittente TCP non riceve alcuna notifica esplicita di congestione dal livello di rete ma ne deduce l'esistenza osservando la perdita di pacchetti. Di recente sono state proposte estensioni per IP e TCP che permettono al livello di rete di segnalare esplicitamente una congestione a mittente e ricevente TCP. Questa forma di controllo assistito dalla rete è nota come notifica esplicita di congestione.
 
 
 

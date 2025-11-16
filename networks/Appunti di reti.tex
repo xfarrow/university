@@ -800,8 +800,8 @@ Un secondo approccio determina il cluster migliore per un client basandosi sulle
 
 \chapter{Livello di trasporto}
 
-\textbf{\textit{QUESTO CAPITOLO RICHIEDE IMPORTANTI RIVISITAZIONI E APPROFONDIMENTI}}\\\\\\
-Il livello di trasporto fornisce la funzione di fornire servizi di comunicazione tra i processi applicativi in esecuzione su host differenti. Si tratta di estendere il servizio offerto dal livello di rete che invece fornisce servizi di comunicazione tra gli host.
+
+Il livello di trasporto fornisce la funzione di fornire servizi di comunicazione tra i processi applicativi in esecuzione su host differenti. Si tratta di estendere il servizio offerto dal livello di rete che invece fornisce solo il servizio di comunicazione tra gli host.
 
 \section*{3.1 Introduzione e servizi a livello di trasporto}
 Un protocollo a livello di trasporto mette a disposizione una comunicazione logica tra processi applicativi su host differenti.
@@ -825,13 +825,13 @@ Si noti che una rete può offrire più protocolli di trasporto ciascuno dei qual
 \subsection*{3.1.2 Panoramica del livello di trasporto di Internet}
 Internet offre due protocolli di trasporto:
 \begin{itemize}
-	\item UDP (User Datagram Protocol): fornisce alle applicazioni non affidabile e non è orientato alla connessione. Fornisce un controllo degli errori molto semplice.
+	\item UDP (User Datagram Protocol): fornisce alle applicazioni un servizio non affidabile e non è orientato alla connessione. Fornisce un controllo degli errori molto semplice.
 	\item TCP (Transmission Control Protocol): È orientato alla connessione e offre un servizio affidabile. Offre, inoltre, un servizio di controllo della congestione regolando la velocità alla quale il lato mittente della connessione TCP immette traffico in rete
 \end{itemize}
 
 TCP offre servizio di trasporto dati affidabile anche quando il sottostante protocollo di rete non è affidabile, infatti quest'ultimo prevede un servizio "best effort" ovvero fa del suo meglio per consegnare i pacchetti tra host comunicanti ma non offre alcuna garanzia: nè che i pacchetti arrivino in ordine nè che arrivino affatto.
 
-Il principale compito di TCP e UDP è l'estensione del servizio di consegna di IP tra sistemi periferici a quello di consegna tra processi in esecuzione su sistemi periferici. Questa funzionalità è detta multiplexing o demultiplexing a seconda della direzione.
+Il principale compito di TCP e UDP è l'estensione del servizio di consegna tra sistemi periferici (offerto da IP) a quello di consegna tra processi in esecuzione su sistemi periferici. Questa funzionalità è detta multiplexing o demultiplexing a seconda della direzione.
 
 \section*{3.2 Multiplexing e demultiplexing}
 Il multiplexing e il demultiplexing sono i metodi con cui il servizio di trasporto da host a host fornito dal livello di rete diventa un servizio di trasporto da processo a processo.

@@ -896,7 +896,7 @@ In un segmento UDP ci sono 5 campi:
 \end{figure}
 
 \subsection*{Checksum UDP}
-Il checksum in UDP viene utilizzato per determinare se i bit del segmento UDP sono stati alterati durante il loro trasferimento.
+Il checksum in UDP viene utilizzato per determinare se i bit del segmento sono stati alterati durante il loro trasferimento.
 
 Il mittente effettua il complemento a 1 della somma di tutte le parole da 16 bit e conserva tale dato nel campo checksum (in altre parole suddivide l'intero segmento in porzioni da 16 bit, ne fa la somma e ne salva all'interno il complemento a uno [gli 0 diventano 1 e gli 1 diventano 0]). Il ricevente usa il complemento per verificare che il risultato della somma tra le somme delle parole che ha ricevuto e il complemento nel pacchetto faccia 111....
 Se c'è almeno uno zero allora si è verificato un errore.
@@ -914,7 +914,8 @@ Il compito di un protocollo di trasferimento dati affidabile è quello di implem
 
 Svilupperemo delle Finite State Machines di un protocollo di trasferimento dati affidabile. Assumeremo che i pacchetti vengano consegnati nell'ordine in cui sono stati inviati, sebbene alcuni possano venir persi o danneggiati.
 
-Il lato mittente del protocollo verrà invocato tramite una chiamata \texttt{rdt\_send} ("rdt" sta per Reliable Data Transfer) e invocherà \texttt{udt\_send} ("udt" sta per Unreliable Data Transfer) del protocollo sottostante. Quando un pacchetto raggiungerà il lato ricevente, verrà invocato \texttt{rdt\_rcv} e passerà i dati al livello superiore tramite \texttt{deliver\_data}. Senza mancare di generalità ma semplificando il discorso tratteremo solo il caso di un trasferimento \textbf{dati} unidirezionale. Si noti che mittente e destinatario abbiano comunque bisogno di scambiarsi informazioni di \textbf{controllo} in entrambe le direzioni.
+Il lato mittente del protocollo verrà invocato dal livello superiore tramite una chiamata \texttt{rdt\_send} ("rdt" sta per Reliable Data Transfer) e invocherà \texttt{udt\_send} ("udt" sta per Unreliable Data Transfer) del protocollo sottostante. In altre parole il livello $n+1$ chiede al livello $n$ di inviare dati in modo affidabile. Dato che il livello $n-1$ potrebbe non esserlo, il livello $n$ deve escogitare dei meccanismi per far sì di adempire al compito richiesto.
+Quando un pacchetto raggiungerà il lato ricevente, verrà invocato \texttt{rdt\_rcv} e passerà i dati al livello superiore tramite \texttt{deliver\_data}. Senza mancare di generalità ma semplificando il discorso tratteremo solo il caso di un trasferimento \textbf{dati} unidirezionale. Si noti che mittente e destinatario abbiano comunque bisogno di scambiarsi informazioni di \textbf{controllo} in entrambe le direzioni.
 
 La teoria sviluppata in queste pagine si applica alla reti di calcolatori in generale e non solo al livello di trasporto e per tale motivo abbiamo usato il termine generale "pacchetto" anziché "segmento".
 
@@ -995,10 +996,10 @@ Questa FSM è molto simile a RDT 2.0 ma ha il doppio degli stati per gestire il 
 
 \begin{itemize}
 	\item (A) Pacchetto corrotto; invia NAK
-	\item (B) Pacchetto duplicato (has\_seq sarebbe dovuto essere 0); invia ACK
+	\item (B) Pacchetto duplicato (has\_seq sarebbe dovuto essere 0); invia di nuovo l' ACK
 	\item (C) Pacchetto numero 0 ricevuto con successo, manda ACK e manda i dati al protocollo superiore
 	\item (D) Pacchetto corrotto; invia NAK
-	\item (E) Pacchetto duplicato (has\_seq sarebbe dovuto essere 1); invia ACK
+	\item (E) Pacchetto duplicato (has\_seq sarebbe dovuto essere 1); invia di nuovo l' ACK
 	\item (F) Pacchetto numero 1 ricevuto con successo, manda ACK e manda i dati al protocollo superiore
 \end{itemize}
 
@@ -1006,7 +1007,7 @@ Questa FSM è molto simile a RDT 2.0 ma ha il doppio degli stati per gestire il 
 Supponiamo ora che il canale di trasmissione, oltre a danneggiare i pacchetti, possa anche perderli.
 
 Il protocollo deve preoccuparsi ora di due aspetti aggiuntivi: come rilevare lo smarrimento di pacchetti e cosa fare quando ciò avviene. Per gestire il primo problema assegneremo al mittente l'onere di rilevare e risolvere la perdita di pacchetti. Supponiamo che il mittente spedisca un pacchetto dati e che questo oppure l'acknowledgment di ritorno vada smarrito. In entrambi i casi il mittente non otterrà alcuna risposta da parte del destinatario. Se il mittente è disposto ad attendere un tempo sufficiente per essere certo dello smarrimento del pacchetto, può semplicemente ritrasmettere il pacchetto dati.
-Notiamo che il mittente potrebbe ritrasmettere un pacchetto perché esso o l'ACK di ritorno ha sperimentato un ritardo notevolmente lungo ma non è andato perso. Ciò introduce la possibilità di pacchetti duplicati. Dunque il mittente non sa se un pacchetto  dati sia andato perduto, se sia stato smarrito un ACK o se uno dei due ha semplicemente subito un ritardo. In tutti questi casi l'azione intrapresa è sempre la stessa: ritrasmettere.
+Notiamo che il mittente potrebbe ritrasmettere un pacchetto perché esso o l'ACK di ritorno ha sperimentato un ritardo notevolmente lungo ma non è andato perso. Ciò permette che dei pacchetti vengano duplicati. Dunque il mittente non sa se un pacchetto  dati sia andato perduto, se sia stato smarrito un ACK o se uno dei due ha semplicemente subito un ritardo. In tutti questi casi l'azione intrapresa è sempre la stessa: ritrasmettere.
 
 Questo meccanismo richiede di introdurre quindi un timer in grado di segnalare al mittente l'avvenuta scadenza di un dato lasso di tempo. Il mittente dovrà quindi essere in grado di (1) inizializzare il contatore ogni volta che invia un pacchetto (sia che si tratti di un primo invio sia che si tratti di una ritrasmissione) (2) di rispondere a un interrupt generato dal timer con l'azione appropriata e (3) di fermare il contatore.
 
@@ -1156,7 +1157,7 @@ Ecco cosa avviene:
 \end{enumerate}
 
 \subsection*{3.5.3 Timeout e stima del tempo di andata e ritorno}
-TCP utilizza un meccanismo di timeut per recuperare i segmenti persi. Chiaramente, il timeout dovrebbe essere più grande del tempo di andata e ritorno sulla connessione (RTT). Ma di quanto deve essere maggiore? E come stimare RTT?
+TCP utilizza un meccanismo di timeout per recuperare i segmenti persi. Chiaramente, il timeout dovrebbe essere più grande del tempo di andata e ritorno sulla connessione (RTT). Ma di quanto deve essere maggiore? E come stimare RTT?
 
 \subsubsection*{Stima del tempo di andata e ritorno}
 L'RTT misurato per un segmento, denotato come \texttt{SampleRTT} è la quantità di tempo che intercorre tra l'istante in cui il segmento viene passato a IP e quello della ricezione del suo acknowledgment.

@@ -838,7 +838,13 @@ Il multiplexing e il demultiplexing sono i metodi con cui il servizio di traspor
 
 Nell'host destinatario il livello di trasporto riceve segmenti dal livello di rete immediatamente sottostante. Il livello di trasporto ha il compito di consegnare i dati di questi segmenti al processo applicativo appropriato. In realtà non consegna i dati direttamente al processo ma piuttosto alla socket che funge da intermediario. Siccome a ogni dato istante possono esserci più socket sull'host di ricezione, ciascuna avrà un identificatore univoco.
 
-Il compito di trasportare i dati dei segmenti a livello di trasporto verso la giusta socket viene detto demultiplexing. Viceversa, il compito di radunare dati da diverse socket e incapsulare ognuno con intestazioni a livello di trasporto per creare segmenti da passare al livello di rete viene detto multiplexing (CAPIRE O SCRIVERE MEGLIO).
+Il compito di trasportare i dati dei segmenti a livello di trasporto verso la giusta socket (dati in ingresso) viene detto demultiplexing. Viceversa, il compito di radunare dati da diverse socket e incapsulare ognuno con intestazioni a livello di trasporto per creare segmenti (dati in uscita) viene detto multiplexing.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.6\textwidth]{images/MultiplexingAndDemultiplexing.png}
+	\caption{Multiplexing e demultiplexing}
+\end{figure}
 
 Gli identificatori univoci delle socket vengono dette porte, composti da 16 bit. I numeri da 0 a 1023 sono chiamati numeri di porta noti e sono riservati per essere usati da protocolli applicativi ben noti (es. HTTP sulla porta 80).
 
@@ -1258,7 +1264,7 @@ Nel caso di UDP, invece, il destinatario manda uno speciale datagramma ICMP.
 \section*{3.6 Princìpi del controllo di congestione}
 La ritrasmissione dei pacchetti tratta il sintomo della congestione della rete (la perdita di quest'ultimi causati da un buffer overflow nei router) ma non la causa (il tentativo di una o più sorgenti di inviare dati a ritmi troppo elevati). Per questo motivo sono richiesti meccanismi per adeguare l'attività dei mittenti in relazione al traffico.
 
-\section*{3.6.1 Cause e costi della congestione}
+\subsection*{3.6.1 Cause e costi della congestione}
 Il libro fa una serie di esempi che mostrano alcune cause che incrementano la congestione della rete:
 \begin{itemize}
 	\item Avere un throughput vicino alla velocità massima del collegamento di uscita del router potrebbe sembrare ideale dal punto di vista del throughput ma non dal punto di vista del ritardo. Infatti più ci si avvicina al limite del collegamento più saranno lunghi i ritardi di accodamento e quindi la congestione aumenta.

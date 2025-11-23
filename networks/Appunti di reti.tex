@@ -850,7 +850,7 @@ Gli identificatori univoci delle socket vengono dette porte, composti da 16 bit.
 
 Quando un segmento arriva all'host di destinazione, il protocollo a livello di trasporto esamina il numero della porta di destinazione e dirige il segmento verso la socket corrispondente.
 
-Generalmente il lato client usa un numero casuale di porta mentre lato server si assegna un numero di porta specifico perché non vi è necessità di un numero di porta mittente specifico; infatti, il numero di porta di origine serve solo a specificare un indirizzo di ritorno. Si immagini che A voglia instaurare una connessione HTTP con B: allora A contatta B sulla porta 80 e mette nell'intestazione del segmento un numero di porta di origine casuale. Il server B, quando vuole rispondere ad A, farà assumere il valore del numero di porta di destinazione il numero di porta di origine che aveva ricevuto. 
+Generalmente il lato client usa un numero casuale di porta mentre lato server si assegna un numero di porta specifico. Questo si fa poiché il mittente deve conoscere dove contattare il processo con il quale vuole interagire, mentre il destinatario risponde semplicemente al numero di porta del mittente che ha iniziato la connessione. Si immagini che A voglia instaurare una connessione HTTP con B: allora A contatta B sulla porta 80 e mette nell'intestazione del segmento un numero di porta di origine casuale. Il server B, quando vuole rispondere ad A, farà assumere il valore del numero di porta di destinazione il numero di porta di origine che aveva ricevuto. 
 
 \subsubsection*{Multiplexing e demultiplexing non orientati alla connessione (UDP)}
 Una socket UDP ricevente viene identificata completamente da una coppia che consiste di un indirizzo IP ricevente e un numero di porta ricevente.
@@ -862,8 +862,25 @@ Ne consegue che lato ricevente, a fronte di tutti i parametri che restano uguali
 
 L'host server può ospitare più socket TCP contemporaneamente, ognuna identificata da una specifica quaterna di valori.
 
-\subsubsection*{Web Server e TCP}
-Non sempre esiste una corrispondenza uno a uno tra le socket e i processi. Infatti, si possono avere più socket collegate allo stesso processo.
+Perché si fa così? Perché TCP è orientato alla connessione e deve poter distinguere connessioni diverse. Si consideri la seguente tabella:
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Client IP} & \textbf{Client Porta} & \textbf{Server IP} & \textbf{Server Porta} \\
+		\hline
+		10.0.0.2 & 50000 & 93.184.216.34 & 80 \\
+		10.0.0.3 & 50000 & 93.184.216.34 & 80 \\
+		\hline
+	\end{tabular}
+	\caption*{}
+\end{table}
+
+Anche se Server IP e Server Porta sono identici, gli indirizzi IP dei client cambiano, pertanto il server ha due socket diverse ognuna delle quali con una connessione differente. Si noti che in TCP non c'è una corrispondenza 1:1 tra numero di porta e socket. In questo esempio, infatti, c'è un solo numero di porta ma con due socket.
+
+Inoltre, non sempre esiste una corrispondenza 1:1 tra le socket e i processi. Infatti, si possono avere più socket collegate allo stesso processo.
+
+Ricapitolando, un numero di porta può avere più socket. Più socket possono essere collegate allo stesso processo.
 
 \section*{3.3 Trasporto non orientato alla connessione: UDP}
 Un livello di trasporto deve quantomeno fornire un servizio di multiplexing e demultiplexing al fine di trasferire i dati tra il livello di rete e il processo corretto a livello di applicazione.
@@ -1062,9 +1079,9 @@ Il numero di sequenza è scritto in un campo di $k$ bit e dunque sono possibili 
 
 Il mittente GBN deve rispondere a tre tipi di evento:
 \begin{enumerate}
-	\item Invocazione dall'alto: quando dall'alto si chiama \texttt{rdt\_send()} come prima cosa controlla se la finestra sia piena, ossia se vi siano N pacchetti in sospeso senza acknowledgment.
-	\item Ricezione di un ACK: nel protocollo GBN l'ACK del pacchetto con numero di sequenza n verrà considerato come un acknlowledgment cumulativo che indica che tutti i pacchetti con numero di sequenza minore o uguale a n sono stati correttamente ricevuti
-	\item Quando si verifica un timeout il mittente invia nuovamente tutti i pacchetti trasmessi e non riscontrati. Se si riceve un ACK ma ci sono ancora pacchetti in sospeso in attesa di ackwnowledgment il timer viene fatto ripartire.
+	\item Invocazione dall'alto: quando dall'alto si chiama \texttt{rdt\_send()} come prima cosa controlla se la finestra sia piena, ossia se vi siano N pacchetti in sospeso senza acknowledgment. Se la finestra non è piena, invia il pacchetto e fa partire il timer.
+	\item Ricezione di un ACK: nel protocollo GBN l'ACK del pacchetto con numero di sequenza n verrà considerato come un acknlowledgment cumulativo che indica che tutti i pacchetti con numero di sequenza minore o uguale a n sono stati correttamente ricevuti. A questo punto si controlla se vi siano ancora pacchetti in attesa di riscontro (e quindi \texttt{base+1} $\neq$ \texttt{nextsum}). Se così fosse, il timer viene fatto ripartire.
+	\item Quando si verifica un timeout il mittente invia nuovamente tutti i pacchetti trasmessi e non riscontrati e successivamente fa ripartire il timer. 
 \end{enumerate}
 
 Le azioni del destinatario GBN sono semplici: Se un pacchetto con numero di sequenza n viene correttamente ricevuto ed è in ordine, il destinatario manda un ACK per quel pacchetto. In tutti gli altri casi il destinatario scarta i pacchetti e rimanda un ACK per il pacchetto corretto ed in ordine ricevuto più di recente. Per induzione se un pacchetto $k$ è stato ricevuto in ordine e corretto, tutti i pacchetti con numero inferiore a $k$ sono stati anch'essi ricevuti correttamente ed in ordine.
@@ -1078,15 +1095,13 @@ Esistono scenari in cui GBN ha problemi di prestazioni ad esempio quando nella p
 
 Si userà di nuovo una finestra di dimensione $N$ ma stavolta si consentirà a dei pacchetti all'interno della finestra di essere marcati come ACK'd. Inoltre, anche il destinatario avrà una sua finestra della stessa dimensione.
 
-Il mittente ha un timer per ogni pacchetto che invia, ritrasmettendolo qualora non riceva un ACK nel tempo stabilito.
-
-La finestra si muove in avanti verso il primo pacchetto non ancora ACK'd o non ancora usato quando riceve un ACK per \texttt{base}
+Il mittente ha un timer per ogni pacchetto che invia, ritrasmettendolo qualora non riceva un ACK nel tempo stabilito. La sua finestra si muove in avanti verso il primo pacchetto non ancora ACK'd o non ancora usato quando riceve un ACK per \texttt{base}
 
 Il destinatario invia un ACK per i pacchetti ricevuti sia in ordine sia fuori sequenza (che memorizzerà in un buffer fin quando non arrivino i pacchetti con numero di sequenza minore).
 
-Se il destinatario si aspetta il pacchetto $n$ e arriva correttamente il pacchetto $n$, la finestra si muove in avanti di 1. Se il destinatario si aspetta il pacchetto $n$ e arriva $n+t$, memorizza $n+t$ nel buffer ma non sposta avanto la finestra. La sposterà solo quando arrivano tutti i pacchetti da $n$ a $n+t$ (\texttt{base assumerà il valore di $n+t+1$}).
+Se il destinatario si aspetta il pacchetto $n$ e arriva correttamente il pacchetto $n$, la finestra si muove in avanti di 1. Se il destinatario si aspetta il pacchetto $n$ e arriva $n+t$, memorizza $n+t$ nel buffer ma non sposta avanti la finestra. La sposterà solo quando arrivano tutti gli altri pacchetti da $n$ a $n+t-1$ (\texttt{base} assumerà il valore di $n+t+1$).
 
-Le finestre del mittente e del destinatario potrebbero non coincidere, caso in cui il destinatario invia un ACK e quindi la sua finestra si sposta, ma non arriva al mittente. È pertanto fondamentale che $N$ sia minore o uguale ai numeri possibile di sequenza in quanto se ciò non fosse il caso si verrebbero a creare delle incomprensioni.
+Le finestre del mittente e del destinatario potrebbero non coincidere, caso in cui il destinatario invia un ACK e quindi la sua finestra si sposta, ma non arriva al mittente. È pertanto fondamentale che $N$ sia minore o uguale alla metà dei numeri possibili di sequenza in quanto se ciò non fosse il caso verrebbero immessi sulla rete pacchetti distinti ma con identico numero di sequenza, causando errori ed incomprensioni.
 
 Nei documenti digitali allegati vi è una cartella denominata "SelectiveRepeatProtocol" nel quale è presente una simulazione interattiva.
 
@@ -1126,16 +1141,16 @@ Il numero di sequenza contenuto in un pacchetto è il numero del primo byte cont
 In realtà i numeri di sequenza non partono sempre da zero, infatti, mittente e destinatario usano un numero casuale come numero iniziale per evitare che segmenti attinenti a vecchie connessioni TCP tra gli stessi host ancora in rete possano essere interpretati come segmenti validi e pertanto mandare in confusione la trasmissione.
 
 
-Il numero di acknowledgment che l'host A scrive nei propri segmenti è il numero di sequenza del byte successivo che l'host A attende dall'host B.
+Il numero di acknowledgment che l'host A scrive nei propri segmenti è il numero del byte successivo che attende di ricevere dall'host B
 
 \begin{itemize}
-	\item Se B manda ad A 1000 byte, il prossimo segmento di A avrà un numero di acknowledgment di 1001
-	\item Se B banda ad A 3 segmenti ma A riceve solo il primo e l'ultimo, allora A continuerà a mettere 1001 nel prossimo segmento che invierà a B.
+	\item Se B manda ad A un segmento contenente i byte numerati da 0 a 999, il prossimo segmento di A avrà un numero di acknowledgment di 1000
+	\item Se B banda ad A 3 segmenti: [0-999], [1000-1999], [2000-2999] ma A riceve solo il primo e l'ultimo, allora A metterà sempre 1000 nei suoi ACK fin quando non arriva [1000-1999].
 \end{itemize}
 
-Dato che TCP effettua l'acknowledgment dei byte fino all'ultimo byte che ha nel flusso, si dice che TCP offre acknowledgment cumulativi.
+Dato che TCP effettua l'acknowledgment solo dei byte fino al primo byte mancante nel flusso, si dice che tale protocollo offra acknowledgment cumulativi. Per fare un esempio, inviare ACK 5000 indica che i byte 0-4999 sono arrivati correttamente.
 
-C'è una coppia (numero di sequenza, numero di acknowledgment) per il mittente e una coppia (numero di sequenza, numero di acknowledgment) per il destinatario, dato che la connessione è full-duplex.
+C'è una coppia (numero di sequenza, numero di acknowledgment) per il mittente e una coppia (numero di sequenza, numero di acknowledgment) per il destinatario.
 
 Che cosa fa un host quando riceve segmenti fuori sequenza? RFC non impone nulla a riguardo pertanto chi implementa il protocollo TCP ha due strade:
 \begin{enumerate}
@@ -1152,7 +1167,7 @@ Ipotizziamo una comunicazione telnet tra Host A e Host B: quest'ultimi si acorda
 Ecco cosa avviene:
 \begin{enumerate}
 	\item Il mittente manda la tripla \texttt{(Seq=42, Ack=79, data='C')} che significa "il primo byte in questo messaggio ha numero di sequenza 42 e mi aspetto da te un segmento con numero di sequenza 79. Invio il carattere 'C'.
-	\item Il destinatario risponde con la tripla \texttt{(Seq=79, Ack=43, data='C')}. Questo segmento ha un duplice obiettivo: confermare l'avvenuta ricezione del primo segmento (acknowledgment) e trasportare dati al client. Per questo motivo si dice che l'acknowledgment è "piggybacked"
+	\item Il destinatario risponde con la tripla \texttt{(Seq=79, Ack=43, data='C')}. Questo segmento ha un duplice obiettivo: confermare l'avvenuta ricezione del primo segmento (quindi si tratta di un acknowledgment) e trasportare dati al client. Per questo motivo si dice che l'acknowledgment è "piggybacked"
 	\item Il mittente conferma l'avvenuta ricezione del segmento con la coppia \texttt{(Seq=43, Ack=80)}. Qui anche se l'acknowledgment non è piggybacked (ovvero non trasporta dati), Seq va avanti di uno per indicare al server che questo è un segmento nuovo.
 \end{enumerate}
 
@@ -1165,7 +1180,7 @@ L'RTT misurato per un segmento, denotato come \texttt{SampleRTT} è la quantità
 \texttt{SampleRTT} viene valutato per ogni segmento non ritrasmesso.
 
 Per effettuare una stima dell'RTT medio si usa la seguente formula, calcolata per ogni \texttt{SampleRTT}:
-$$ \texttt{EstimatedRTT} = (1-\alpha) \times EstimatedRTT + \alpha \times SampleRTT $$ dove $\alpha$ è una costante fissa il cui valore raccomandato è 0,125.
+$$ \texttt{EstimatedRTT} = (1-\alpha) \times \texttt{EstimatedRTT} + \alpha \times \texttt{SampleRTT} $$ dove $\alpha$ è una costante fissa il cui valore raccomandato è 0,125.
 
 Tale media attribuisce maggiore importanza ai campioni recenti rispetto a quelli vecchi. Ciò è naturale in quanto ciò riflette la congestione attuale della rete. Tale media viene definita media mobile esponenziale ponderata.
 
@@ -1173,7 +1188,7 @@ Oltre ad avere una stima di RTT vorremmo avere anche una misura della sua variab
 
 $$\texttt{DevRTT} = (1 - \beta) \times \texttt{DevRTT} + \beta \times |\texttt{SampleRTT} - \texttt{EstimatedRTT}|$$
 
-che è simile alla formula precedente: con $\beta \times |\texttt{SampleRTT} - \texttt{EstimatedRTT}|$ vede quanto si discosta \texttt{SampleRTT} da \texttt{EstimatedRTT} e vi applica un fattore $\beta$ generalmente di 0,25.
+che è simile alla formula precedente: con $|\texttt{SampleRTT} - \texttt{EstimatedRTT}|$ vede quanto si discosta \texttt{SampleRTT} da \texttt{EstimatedRTT} e vi applica un fattore $\beta$ generalmente di 0,25.
 
 \subsubsection*{Impostazione e gestione del timeout di ritrasmissione}
 Dati i valori di \texttt{EstimatedRTT} e \texttt{DevRTT}, quale valore dovremmo usare per il timeout di TCP? Non può chiaramente essere minore di \texttt{EstimatedRTT} altrimenti si verrebbero a creare trasmissioni non necessarie nè tantomento dovrebbe essere molto maggiore di tale valore altrimenti TCP non ritrasmetterebbe rapidamente un segmento perduto.
@@ -1181,7 +1196,7 @@ Dati i valori di \texttt{EstimatedRTT} e \texttt{DevRTT}, quale valore dovremmo 
 Si dovrebbe pertanto impostare il timeout a \texttt{EstimatedRTT} più un certo margine che dovrebbe essere grande quando c'è molta variabilità di \texttt{EstimatedRTT}, piccolo altrimenti. La formula che si usa è:
 $$ \texttt{TimeoutInterval} = \texttt{ExtimatedRTT} + 4 \times \texttt{DevRTT} $$
 
-Il valore iniziale di \texttt{TimeoutInterval} è pari a 1. \textbf{Dire che il valore viene raddoppiato quando si perde un pacchetto? Non ho capito}
+Il valore iniziale di \texttt{TimeoutInterval} è pari a 1.
 
 \subsection*{3.5.4 Trasferimento dati affidabile}
 Il livello rete non è affidabile: non garantisce la consegna, né la consegna in sequenza e né l'integrità dei dati.
@@ -1205,11 +1220,13 @@ Ciò consente di iniziare a creare un piccolo controllo della congestione in qua
 \subsubsection*{Ritrasmissione rapida}
 Il mittente può in molti casi rilevare la perdita dei pacchetti ben prima che si verifichi l'evento di timeout grazie agli ACK duplicati. Dobbiamo innanzitutto capire perché esistono ACK duplicati.
 
-Quando il destinatario TCP rileva un buco nel flusso dei dati (ovvero un segmento mancante), il destinatario non può inviare un NAK esplicito per questi segmenti al mittente in quanto TCP non prevede ciò ma manda un ACK relativo all'ultimo byte che ha ricevuto correttamente e in ordine, duplicando così un ACK.
+Quando il destinatario TCP rileva un buco nel flusso dei dati (ovvero un segmento mancante), il destinatario non può inviare un NAK esplicito per questi segmenti al mittente in quanto TCP non prevede ciò. Dunque manda invece un ACK relativo all'ultimo byte che ha ricevuto correttamente e in ordine, duplicando così un ACK. Facendo un esempio, quando riceve \texttt{[0-999]} invia \texttt{ACK(1000)}, dopodiché riceve \texttt{[2000-2999]} al quale risponde ancora una volta con \texttt{ACK(1000)}.
 
-Nel caso in cui siano giunti tre ACK duplicati, il mittente effettua una cosiddetta ritramissione rapida, rispendendo il segmento mancante prima della scadenza del timer.
+Nel caso in cui siano giunti tre ACK duplicati (e quindi in totale quattro ACK identici), il mittente effettua una cosiddetta ritramissione rapida, rispendendo il segmento mancante prima della scadenza del timer.
 
-Queste sono le azioni intraprese dal server TCP:
+Perché proprio tre? Perché se fossero uno o due, c'è ancora una probabilità sufficiente a far pensare che quel segmento abbia semplicemente subìto un ritardo, ma se ne ricevo tre vuol dire che oltre a quello smarrito ho inviato altri tre segmenti, dei quali ho anche ricevuto un ACK. Allora è molto probabile che il segmento (o l'ACK) sia stato perso.
+
+Queste sono le azioni intraprese da TCP:
 \begin{enumerate}
 	\item Arrivo di un segmento con numero di sequenza atteso. Tutti i segmenti fino a questo sono già stati riscontrati: attende 500ms per l'arrivo ordinato di un altro segmento. Se non arriva manda un ACK (ciò consente di avere un ACK cumulativo)
 	\item Arrivo di un segmento con numero di sequenza atteso. C'è un segmento ordinato in attesa di trasmissione dell'ACK (caso 1): Invia immediatamente un ACK cumulativo per entrambi. Caso 1 e caso 2 insieme fanno sì che possano esistere ACK cumulativi ma al massimo per due segmenti insieme.
@@ -1229,18 +1246,24 @@ Benché il controllo di flusso e il controllo della congestione risultino simili
 
 Trattiamo brevemente il controllo di flusso TCP, supponendo che il destinatario scarti sempre i segmenti arrivati non in ordine. L'algoritmo è implementato facendo mantenere al mittente una variabile chiamata finestra di ricezione che gli fornisce dettagli sullo spazio libero disponibile nel buffer del destinatario. Anche il destinatario per lo stesso motivo mantiene la sua finestra di ricezione.
 
-Entrambi gli host allocheranno un buffer di dimensione \texttt{RcvBuffer}. Inoltre avremo \texttt{LastByteRead} che è il numero dell'ultimo byte nel flusso dati che il processo applicativo ha letto dal buffer e \texttt{LastByteRcvd} rappresenta il numero dell'ultimo byte arrivato dalla rete salvato nel buffer. Avremo dunque che la seguente disuguaglianza deve essere sempre soddisfatta per evitare un overflow:
+Entrambi gli host allocheranno un buffer di ricezione di dimensione \texttt{RcvBuffer}. Inoltre avremo \texttt{LastByteRead} che è il numero dell'ultimo byte nel flusso dati che il processo applicativo ha letto dal buffer e \texttt{LastByteRcvd} rappresenta il numero dell'ultimo byte arrivato dalla rete salvato nel buffer. Avremo dunque che la seguente disuguaglianza deve essere sempre soddisfatta per evitare un overflow:
 $$ \texttt{LastByteRcvd} - \texttt{LastByteRead} \leq  \texttt{RcvBuffer} $$
 
+Facciamo un esempio:
+
+Se l'ultimo byte che ha letto dal buffer è il 20° del flusso dati e l'ultimo byte che ha ricevuto e memorizzato nel buffer è il 30°, allora il buffer deve essere grande almeno 10 byte, altrimenti va in overflow.
+
 La finestra di ricezione, denotata con \texttt{rwnd} rappresenta la quantità disponibile nel buffer:
-$$ \texttt{rwnd} = \texttt{RcvBuffer} - (\texttt{LastByteRcvd} \texttt{LastByteRead})  $$
+$$ \texttt{rwnd} = \texttt{RcvBuffer} - (\texttt{LastByteRcvd} - \texttt{LastByteRead}) $$
 
 Il valore di \texttt{rwnd} viene messo nel campo apposito del segmento inviato da un host all' altro.
 
 Vengono memorizzate ulteriori variabili: \texttt{LastByteSent} che rappresenta il numero dell'ultimo byte del flusso inviato e \texttt{LastByteAcked} che rappresenta l'ultimo byte per cui si è ricevuto un acknowledgment. Ma allora $\texttt{LastByteSent} - \texttt{LastByteAcked}$ rappresenta quanti dati ci sono nel buffer dell'altro host. Per tale motivo chi invia dati deve mentenere la seguente disuguaglianza sempre vera:
 $$ \texttt{LastByteSent}_{\texttt{mittente}} - \texttt{LastByteAcked}_{\texttt{mittente}} \leq \texttt{rwnd}_{\texttt{destinatario}} $$
 
-Vediamo che cosa succede quando \texttt{rwnd = 0} nell'host destinatario B e che non abbia ACK o altri dati da inviare al mittente A. Mano a mano il buffer di B si svuoterà ma poiché B non ha nulla da inviare ad A (e quindi non può far pervenire il nuovo valore di \texttt{rwnd}) e A non manda segmenti a B perché nota che la finestra è piena, ci troveremo in una situazione di stallo. Per ovviare a ciò le specifiche TCP impongono che sebbene \texttt{rwnd} sia zero, il mittente continui a mandare segmenti con un byte di dati. In questo caso se il buffer è pieno vengono semplicemente scartati, ma quando avrà iniziato a svuotarsi, manderà un ACK contenente il nuovo valore di \texttt{rwnd}.
+Vediamo che cosa succede quando \texttt{rwnd = 0} nell'host destinatario B e che non abbia ACK $(*)$ o altri dati da inviare al mittente A. Mano a mano il buffer di B si svuoterà ma poiché B non ha nulla da inviare ad A (e quindi non può far pervenire il nuovo valore di \texttt{rwnd}) e A non manda segmenti a B perché nota che la finestra è piena, ci troveremo in una situazione di stallo. Per ovviare a ciò le specifiche TCP impongono che sebbene \texttt{rwnd} sia zero, il mittente continui a mandare segmenti con un byte di dati. In questo caso se il buffer è pieno vengono semplicemente scartati, ma quando avrà iniziato a svuotarsi, manderà un ACK contenente il nuovo valore di \texttt{rwnd}.
+
+$(*)$ Gli ACK vengono inviati quando si ricevono segmenti, non quando si leggono dal buffer. Quindi B continua a leggere dal suo buffer senza mandare ACK
 
 \subsection*{3.5.6 Gestione della connessione TCP}
 Vediamo come viene stabilita e rilasciata una connessione TCP. Fare ciò può aggiungere ritardi.
@@ -1283,7 +1306,7 @@ Esistono due approcci per controllare la congestione:
 \section*{3.7 Controllo di congestione TCP}
 TCP offre il meccanismo di controllo della congestione, imponendo a ciascun mittente un limite alla velocità di invio sulla propria connessione in funzione della congestione di rete percepita.
 
-Per fare questo, TCP fa tener traccia agli estremi della connessione una variabile aggiuntiva chiamata finestra di congestione, indicata con \texttt{cwnd}. Ricordandoci della variabile \texttt{rwnd} precedentemente menzionata, si avrà che TCP imporrà che la seguente diseguaglianza risulti sempre soddisfatta:
+Per fare questo, TCP fa tener traccia agli estremi della connessione una variabile aggiuntiva chiamata finestra di congestione, indicata con \texttt{cwnd}. Ricordandoci della variabile \texttt{rwnd} precedentemente menzionata, si avrà che TCP mittente imporrà che la seguente diseguaglianza risulti sempre soddisfatta:
 $$ \texttt{LastByteSent} - \texttt{LastByteAcked} \leq min\{\texttt{cwnd}, \texttt{rwnd}\} $$
 
 ricordandosi che \texttt{LastByteSent} - \texttt{LastByteAcked} equivale al numero di byte inviati ma di cui non si è ricevuto alcun acknowledgment.

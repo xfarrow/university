@@ -1203,13 +1203,13 @@ Il livello rete non è affidabile: non garantisce la consegna, né la consegna i
 
 TCP crea un servizio di trasporto dati affidabile al di sopra del servizio inaffidabile del livello di rete, assicurando che il flusso di byte che il processo ricevente leggerà dal buffer è esattamente quello spedito, ovvero senza alterazioni, buchi, duplicazioni e in sequenza.
 
-Con i precedenti algoritmi teorici assegnavamo un timer per ogni segmento trasmesso per cui non si sia ricevuto ancora un acknowledgment ma TCP utilizza un solo timer di ritrasmissione, anche in presenza di più segmenti senza acknowledgment. Lo si può pensare come un timer associato al segmento più vecchio che non ha ancora ricevuto acknowledgment.
+TCP utilizza un solo timer di ritrasmissione, anche in presenza di più segmenti senza acknowledgment. Lo si può pensare come un timer associato al segmento più vecchio che non ha ancora ricevuto acknowledgment.
 
 Esistono tre eventi che un mittente TCP deve gestire:
 \begin{enumerate}
 	\item Dati provenienti dall'applicazione: TCP li incapsula in uno o più segmenti che vengono successivamente passati a IP
 	\item Timeout: quando si verifica un timeout, TCP risponde con il segmento che lo ha causato e successivamente resetta il timer. In altre parole ritrasmette il segmento con il più basso numero di sequenza di cui non si è ancora ricevuto l'ACK
-	\item Arrivo del segmento di acknowledgment: TCP confronta il valore contenuto nell'ACK con la propria variabile \texttt{Base} che rappresenta il numero di sequenza del più vecchio byte che non ha ancora ricevuto un acknowledgment. Conseguentemente \texttt{Base - 1} è il numero di sequenza dell'ultimo byte che si sa essere stato ricevuto correttamente. TCP usa acknowledgment cumulativi: Pertanto un ACK \texttt{y} conferma la ricezione di tutti i byte precedenti al byte numero \texttt{y}. A questo punto se ci sono altri segmenti in attesa di acknowledgment riavvia il timer altrimenti lo ferma.
+	\item Arrivo del segmento di acknowledgment: TCP usa acknowledgment cumulativi: Pertanto un ACK \texttt{y} conferma la ricezione di tutti i byte precedenti al byte numero \texttt{y}. TCP mantiene la variabile \texttt{base} che rappresenta il numero di sequenza del più vecchio byte che non ha ancora ricevuto un acknowledgment. Conseguentemente \texttt{base - 1} è il numero di sequenza dell'ultimo byte che si sa essere stato ricevuto correttamente (Come in GBN). A questo punto se ci sono altri segmenti in attesa di acknowledgment riavvia il timer. In caso contrario lo ferma.
 \end{enumerate}
 
 \subsubsection*{Raddoppio dell'intervallo di timeout}
@@ -1237,6 +1237,13 @@ Queste sono le azioni intraprese da TCP:
 \subsubsection*{GBN o SR?}
 TCP è un protocollo GBN o SR? Si presenta come un ibrido tra i due.
 
+Motivazione:
+\begin{itemize}
+	\item TCP usa un solo timer, come in GBN
+	\item TCP invia solo il segmento associato al timer che è scattato, anziché ritrasmettere tutti i segmenti non ACK'd, come in SR. (Sebbene il timer in TCP ne sia solo uno a differenza di SR che consente un timer per segmento)
+	\item TCP usa ACK cumulativi, come in GBN
+\end{itemize}
+
 \subsection*{3.5.5 Controllo di flusso}
 Se l'applicazione ricevente è troppo lenta nella lettura dei dati dal buffer può accadere che il mittente mandi in overflow il buffer di ricezione del destinatario, inviando dati troppo rapidamente. Per questo motivo è necessario un servizio di controllo di flusso che fortunatamente è offerto da TCP. Gli algoritmi di controllo di flusso confrontano la velocità di invio del mittente con quella di lettura del destinatario.
 
@@ -1260,6 +1267,10 @@ Il valore di \texttt{rwnd} viene messo nel campo apposito del segmento inviato d
 
 Vengono memorizzate ulteriori variabili: \texttt{LastByteSent} che rappresenta il numero dell'ultimo byte del flusso inviato e \texttt{LastByteAcked} che rappresenta l'ultimo byte per cui si è ricevuto un acknowledgment. Ma allora $\texttt{LastByteSent} - \texttt{LastByteAcked}$ rappresenta quanti dati ci sono nel buffer dell'altro host. Per tale motivo chi invia dati deve mentenere la seguente disuguaglianza sempre vera:
 $$ \texttt{LastByteSent}_{\texttt{mittente}} - \texttt{LastByteAcked}_{\texttt{mittente}} \leq \texttt{rwnd}_{\texttt{destinatario}} $$
+
+Ciò sta a significare che la differenza tra \texttt{LastByteSent} e \texttt{LastByteAcked} conservati sul mittente devono essere inferiori o uguali a \texttt{rwnd} del destinatario.
+
+Si noti che se degli ACK vanno persi non si compormette la sicurezza del sistema. In tal caso il mittente avrà un eccesso di cautela (penserà che uno o più segmenti ACK'd siano ancora nel buffer del destinatario).
 
 Vediamo che cosa succede quando \texttt{rwnd = 0} nell'host destinatario B e che non abbia ACK $(*)$ o altri dati da inviare al mittente A. Mano a mano il buffer di B si svuoterà ma poiché B non ha nulla da inviare ad A (e quindi non può far pervenire il nuovo valore di \texttt{rwnd}) e A non manda segmenti a B perché nota che la finestra è piena, ci troveremo in una situazione di stallo. Per ovviare a ciò le specifiche TCP impongono che sebbene \texttt{rwnd} sia zero, il mittente continui a mandare segmenti con un byte di dati. In questo caso se il buffer è pieno vengono semplicemente scartati, ma quando avrà iniziato a svuotarsi, manderà un ACK contenente il nuovo valore di \texttt{rwnd}.
 
@@ -1321,12 +1332,12 @@ La strategia di TCP è quello di incrementare la velocità di trasmissione in ri
 
 Per il comportamento di TCP sopracitato, si dice che TCP è auto-temporizzato.
 
-L'algoritmo di congestione di TCP presenta tre componenti: (1) slow start, (2) congestion avoidance e (3) fast recovery
+L'algoritmo di congestione di TCP presenta tre componenti: (1) slow start, (2) congestion avoidance e (3) fast recovery. Supponiamo che il mittente invii continuamente segmenti.
 
 \subsubsection*{Slow start}
 Quando si stabilisce una connessione TCP, il valore di \texttt{cwnd} viene impostato a 1 MSS e si incrementa di 1 MSS ogniqualvolta un segmento trasmesso riceve un ACK. Questo processo ha come effetto una velocità di trasmissione iniziale lenta per poi crescere esponenzialmente.
 
-Cresce esponenzialmente perché dopo la ricezione di un ACK del primo segmento trasmesso potrà trasmetterne due, dopodiché potrà trasmetterne 4,8,16 e così via.
+Cresce esponenzialmente perché dopo la ricezione di un ACK del primo segmento trasmesso potrà trasmetterne due, dopodiché potrà trasmetterne 4,8,16 e così via. Ciò viene fatto per individuare velocemente la capacità della rete
 
 Adesso vediamo cosa succede quando c'è un evento di perdita:
 \begin{itemize}
@@ -1334,16 +1345,21 @@ Adesso vediamo cosa succede quando c'è un evento di perdita:
 	\item Se vengono rilevati tre ACK uguali, TCP effettua una ritrasmissione rapida (subsection 3.5.4) ed entra nella modalità fast recovery.
 \end{itemize}
 
+C'è questa distinzione perché se va in timeout vuol dire che non sta ricevendo alcun ACK dalla rete (e quindi quest'ultima è molto congestionata). Invece se riceve 3 ACK duplicati è segno di una congestione non grave (infatti questi ACK hanno comunque viaggiato attraverso la rete, sebbene un segmento sia stato perso). Per tale motivo nel primo caso rallenta drasticamente, nel secondo invece rallenta in maniera più dolce.
+
 \subsubsection*{Congestion avoidance}
-Quando TCP entra in modalità congestion avoidance, il valore di \texttt{cwnd} è la metà di quello che aveva l'ultima volta in cui è stata rilevata la congestione, quindi invece di raddoppiare \texttt{cwnd} a ogni RTT, lo incrementa di 1 MSS a ogni RTT, assumendo un andamento lineare anziché esponenziale.
+Quando TCP entra in modalità congestion avoidance, il valore di \texttt{cwnd} è la metà di quello che aveva l'ultima volta in cui è stata rilevata la congestione, quindi invece di raddoppiare \texttt{cwnd} a ogni RTT, lo incrementa di 1 MSS a ogni RTT quando arriva un ACK, assumendo un andamento lineare anziché esponenziale.
 
 Congestion avoidance termina nei seguenti casi:
 \begin{itemize}
-	\item Se l'evento di perdita è stato causato da un timeout, si comporta allo stesso modo di Slow Start
-	\item In caso di tre ACK duplicati, la rete continua a consegnare pacchetti, pertanto la risposta di TCP è meno drastica: imposta il valore \texttt{ssthresh} a  $\texttt{cwnd}/2$ e successivamente dimezza il valore di \texttt{cwnd} per poi entrare nello stato di fast recovery.
+	\item Se l'evento di perdita è stato causato da un timeout, si comporta allo stesso modo di Slow Start (ritornando in quest'ultimo)
+	\item In caso di tre ACK duplicati, la rete continua a consegnare pacchetti, pertanto la risposta di TCP è meno drastica: imposta il valore \texttt{ssthresh} a  $\texttt{cwnd}/2$ e successivamente dimezza il valore di \texttt{cwnd}, aggiungendo 3 (\texttt{cwnd} = $\frac{\texttt{cwnd}}{2}+3$), per poi entrare nello stato di fast recovery.
 \end{itemize}
 
 \subsubsection*{Fast recovery}
+
+Fast Recovery non è obbligatorio secondo le specifiche di TCP, ma ne è un miglioramento. Permette infatti di evitare di andare in Slow Start qualora la rete non sia gravemente congestionata, che causerebbe \texttt{cwnd} di nuovo a ritornare a 1 MSS.
+
 Durante la fase di fast recovery il valore di \texttt{cwnd} è incrementato di 1 MSS per ogni ACK duplicato ricevuto relativamente al segmento perso che ha causato l'entrata di TCP in modalità fast recovery.
 
 \begin{itemize}

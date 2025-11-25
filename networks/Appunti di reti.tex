@@ -1391,10 +1391,54 @@ Benché TCP sia fair, nulla impedisce a un processo di aprire più connessioni T
 \subsection*{Notifica esplicita di congestione: controllo di congestione assistito dalla rete}
 Un mittente TCP non riceve alcuna notifica esplicita di congestione dal livello di rete ma ne deduce l'esistenza osservando la perdita di pacchetti. Di recente sono state proposte estensioni per IP e TCP che permettono al livello di rete di segnalare esplicitamente una congestione a mittente e ricevente TCP. Questa forma di controllo assistito dalla rete è nota come notifica esplicita di congestione.
 
+\chapter{Livello di rete: piano dei dati}
+Il livello di rete permette la comunicazione host-to-host ed è presente in ognuno degli host e dei router della rete. I pacchetti a questo livello vengono chiamati datagrammi.
 
+\section*{4.1 Panoramica del livello di rete}
+Il ruolo del piano dei dati di ciascun router intermedio è quello di inoltrare il datagramma da link d'ingresso a link di uscita, mentre il ruolo del piano di controllo è quello di coordinare queste azioni intraprese localmente (su un solo router) affinché alla fine i datagrammi vengano trasferiti da un capo all'altro della rete.
 
+\subsection*{4.1.1 Inoltro e instradamento: piano dei dati e piano di controllo}
+È possibile identificare due funzioni effettuate dal livello di rete:
+\begin{itemize}
+	\item Inoltro (forwarding): Quando un router riceve un datagramma, lo deve trasferire sul collegamento di uscita appropriato. Quest'azione si chiama per l'appunto inoltro. La funzione di forwarding è implementata nel piano dei dati. L'inoltro è spesso implementato direttamente in hardware.
+	\item Instradamento (routing): Il livello di rete deve determinare il percorso che i pacchetti devono seguire all'interno della rete, determinati per mezzo degli algoritmi di instradamento. La funzione di instradamento è implementata nel piano di controllo. L'instradamento è solitamente implementato in software.
+\end{itemize}
 
+I router estraggono dai datagrammi dei campi di intestazione che usano come indice nella tabella di inoltro. Il valore trovato indica a quale interfaccia di uscita il segmento debba essere diretto.
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Valore di intestazione} & \textbf{Collegamento di uscita} \\
+		\hline
+		101 & 2 \\
+		001 & 4 \\
+		011 & 1 \\
+		100 & 3 \\
+		\hline
+	\end{tabular}
+	\caption*{Esempio di tabella di inoltro}
+\end{table}
 
+\subsubsection*{Piano di controllo: l'approccio tradizionale}
+Nell'approccio tradizionale l'algoritmo di routing è implementato all'interno del router il quale, come conseguenza, svolge sia funzionalità di inoltro che di instradamento. Per determinare il percorso di instradamento il router deve comunicare con gli altri affinché possa coordinarsi con loro.
+
+\subsubsection*{L'approccio SDN}
+Qui un controller remoto, fisicamente separato dagli altri router, calcola e distribuisce le tabelle di inoltro a tutti i router, facendo sì che la funzionalità di instradamento sia esterna al router a cui viene relagto solo il compito di inoltro.
+
+Ciò è il cuore del cosiddetto "Software Defined Networking (SDN)" perché vi è un solo software che definisce la struttura logica della rete.
+
+\section*{4.1.2 Modelli di servizio}
+Consideriamo i diversi tipi di servizio che un livello di rete potrebbe offrire:
+\begin{itemize}
+	\item Consegna garantita
+	\item Consegna garantita con ritardo limitato
+	\item Consegna ordinata
+	\item Banda minima garantita
+	\item Cifratura
+\end{itemize}
+
+Benché possiamo dare spazio alla fantasia con i servizi che un livello di rete potrebbe offrire, IP, il protocollo di questo livello di Internet, offre solo un servizio best-effort in cui non c'è alcuna garanzia.
 
 
 

@@ -1348,7 +1348,7 @@ Adesso vediamo cosa succede quando c'è un evento di perdita:
 C'è questa distinzione perché se va in timeout vuol dire che non sta ricevendo alcun ACK dalla rete (e quindi quest'ultima è molto congestionata). Invece se riceve 3 ACK duplicati è segno di una congestione non grave (infatti questi ACK hanno comunque viaggiato attraverso la rete, sebbene un segmento sia stato perso). Per tale motivo nel primo caso rallenta drasticamente, nel secondo invece rallenta in maniera più dolce.
 
 \subsubsection*{Congestion avoidance}
-Quando TCP entra in modalità congestion avoidance, il valore di \texttt{cwnd} è la metà di quello che aveva l'ultima volta in cui è stata rilevata la congestione, quindi invece di raddoppiare \texttt{cwnd} a ogni RTT, lo incrementa di 1 MSS a ogni RTT quando arriva un ACK, assumendo un andamento lineare anziché esponenziale.
+Quando TCP entra in modalità congestion avoidance, il valore di \texttt{cwnd} è la metà di quello che aveva l'ultima volta in cui è stata rilevata la congestione, quindi invece di raddoppiare \texttt{cwnd} a ogni RTT, lo incrementa di 1 MSS a ogni RTT, assumendo un andamento lineare anziché esponenziale.
 
 Congestion avoidance termina nei seguenti casi:
 \begin{itemize}

@@ -1394,8 +1394,6 @@ Un mittente TCP non riceve alcuna notifica esplicita di congestione dal livello 
 \chapter{Livello di rete: piano dei dati}
 Il livello di rete permette la comunicazione host-to-host ed è presente in ognuno degli host e dei router della rete. I pacchetti a questo livello vengono chiamati datagrammi.
 
-Un commutatore di pacchetto è un generico dispositivo che si occupa del trasferimento
-
 \section*{4.1 Panoramica del livello di rete}
 Il ruolo del piano dei dati di ciascun router intermedio è quello di inoltrare il datagramma da link d'ingresso a link di uscita, mentre il ruolo del piano di controllo è quello di coordinare queste azioni intraprese localmente (su un solo router) affinché alla fine i datagrammi vengano trasferiti da un capo all'altro della rete.
 
@@ -1422,6 +1420,8 @@ I router estraggono dai datagrammi dei campi di intestazione che usano come indi
 	\caption*{Esempio di tabella di inoltro}
 \end{table}
 
+Un commutatore di pacchetto è un generico dispositivo che si occupa del trasferimento dei pacchetti da un'interfaccia di ingresso a una di uscita. Alcuni commutatori di pacchetti, chiamati commutatori a livello di collegamento stabiliscono l'inoltro in relazione alle informazioni contenute nei campi di intestazione dei frame a livello di collegamento (livello 2). Altri, chiamati router, prendono decisioni di inoltro basandosi sul valore dei campi di intestazione dei datagrammi a livello rete (il livello di questo capitolo).
+
 \subsubsection*{Piano di controllo: l'approccio tradizionale}
 Nell'approccio tradizionale l'algoritmo di routing è implementato all'interno del router il quale, come conseguenza, svolge sia funzionalità di inoltro che di instradamento. Per determinare il percorso di instradamento il router deve comunicare con gli altri affinché possa coordinarsi con loro.
 
@@ -1442,7 +1442,76 @@ Consideriamo i diversi tipi di servizio che un livello di rete potrebbe offrire:
 
 Benché possiamo dare spazio alla fantasia con i servizi che un livello di rete potrebbe offrire, IP, il protocollo di questo livello di Internet, offre solo un servizio best-effort in cui non c'è alcuna garanzia.
 
+\section*{4.2 Che cosa c'è all'interno di un router?}
+\begin{itemize}
+	\item Porte di ingresso
+	\item Porte di uscita
+	\item Struttura di commutazione: connette fisicamente le porte di ingresso a quelle di uscita
+	\item Processore di instradamento: Nella versione non SDN (versione tradizionale) esegue i protocolli di instradamento, mentre nella versione SDN è responsabile della comunicazione con il controller remoto. In tutti i casi mantiene le tabelle di inoltro
+\end{itemize}
 
+Le porte effettuano le dovute operazioni a livello 1 e 2 per comunicare con l'altro capo del mezzo fisico.
+
+L'inoltro può essere:
+\begin{itemize}
+	\item Basato sulla destinazione: il datagramma indica la sua destinazione finale e il router lo inoltra sull'uscita adatta in base all'informazione fornita
+	\item Generalizzato: Come nel precedente, ma oltre alla destinazione finale vengono presi ulteriori fattori come l'origine. la dimensione ecc...
+\end{itemize}
+
+In entrambi i casi è necessario un algoritmo che indichi su quale porta in uscita il datagramma debba essere indirizzato.
+
+\subsection*{4.2.1 Elaborazione alle porte di ingresso e inoltro basato sull'indirizzo di destinazione}
+Un'implementazione elementare della tabella di inoltro potrebbe essere quella di creare una riga per ogni destinazione ma poiché gli indirizzi IP sono a 32 bit, la tabella sarebbe enorme.
+
+Una soluzione allora potrebbe essere quella di andare a intervalli, esempio:
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Valore di intestazione} & \textbf{Collegamento di uscita} \\
+		\hline
+		da 000 a 001 & 1 \\
+		da 010 a 011 & 2 \\
+		da 100 a 101 & 3 \\
+		da 110 a 111 & 4 \\
+		\hline
+	\end{tabular}
+	\caption*{Esempio di tabella di inoltro con intervalli}
+\end{table}
+
+Un'altra idea è quella di andare a prefisso di dimensione variabile. Con questa struttura il router confronta i primi bit dell'indirizzo di destinazione e se c'è corrispondenza inoltra il datagramma sulla porta specificata. Un datagramma potrebbe matchare più righe; in questo caso il router adotta la regola di corrispondenza a prefisso più lungo, ovverosia considera come match il prefisso più lungo che matcha l'indirizzo di destinazione.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|c|}
+		\hline
+		\textbf{Valore di intestazione} & \textbf{Collegamento di uscita} \\
+		\hline
+		11001000 00010111 00010 (21 bit)   & 1 \\
+		11001000 00010111 0001011 (23 bit) & 2 \\
+		11010010 10010000 11011 (21 bit)   & 3 \\
+		altrimenti                         & 4 \\
+		\hline
+	\end{tabular}
+	\caption*{Esempio di tabella di inoltro con prefisso}
+\end{table}
+
+Se dovesse arrivare un datagramma la cui destinazione è \texttt{11001000 00010111 0001011010 11010111} matcherebbe sia la riga 1 che la 2, ma verrebbe inoltrato basandosi su quest'ultima dato che la chiave di ricerca è più lunga.
+
+Sebbene la ricerca all'interno della tabella di inoltro sia l'azione più importante, il router deve anche effettuare le seguenti operazioni (1) elaborazione a livello fisico (2) controllo checksum (3) controllo TTL ecc...
+
+\subsection*{4.2.2 Struttura di commutazione}
+La struttura di commutazione può essere ottenuta in vari modi:
+\begin{itemize}
+	\item Commutazione in memoria: La commutazione tra porte di ingresso e di uscita viene effettuata sotto il controllo diretto della CPU con una memoria condivisa. Se la memoria ha un throughput di $s$ bit/s, impiegherà $s$ bps per scriverci su e $s$ bps per leggervi. La conseguenza è che il throughput complessivo non può superare $s/2$ bps
+	\item Commutazione tramite bus: Le porte di ingresso trasferiscono un datagramma direttamente alle porte di uscita tramite un bus condiviso e senza l'ausilio della CPU: il datagramma viene consegnato a tutte le porte di output ma solo la corrispondente la raccoglierà. Se $n$ pacchetti arrivano contemporaneamente su $n$ porte di ingresso, $n-1$ dovranno aspettare in quanto sul bus si può trasferire solo un pacchetto alla volta
+	\item Commutazione attraverso rete di interconnessione: Per superare la limitazione di un singolo bus condiviso si usa una rete di interconnessione più sofisticata in cui ogni porta in ingresso è collegata con un bus dedicato a ogni porta di uscita. Quando un pacchetto giunge sulla porta di ingresso A che deve essere inoltrato sulla porta di uscita X e contemporaneamente giunge un pacchetto sulla porta B che deve essere inoltrato sulla porta di uscita Y, le due operazioni possono essere fatte in contemporanea. Ma se sia su A che B arriva un pacchetto che deve essere inoltrato su X, uno dei due dovrà rimanere in coda nella porta di input.
+\end{itemize}
+
+\subsection*{4.2.3}
+[useless]
+
+\subsection*{4.2.4 Dove si verifica l'accodamento?}
 
 
 

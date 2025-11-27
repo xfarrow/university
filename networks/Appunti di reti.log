@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.10.20)  27 NOV 2025 09:39
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.10.20)  27 NOV 2025 10:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -411,32 +411,32 @@ Capitolo 2.
 [13
 
 ]
-Overfull \hbox (12.02382pt too wide) in paragraph at lines 282--283
+Overfull \hbox (12.02382pt too wide) in paragraph at lines 283--284
 \OT1/cmr/m/n/10 Un pro-to-collo a liv-ello di trasporto potrebbe fornire un thr
 ough-put garan-tito. Con tale servizio l'applicazione
  []
 
 [14] [15]
-Overfull \hbox (2.11504pt too wide) in paragraph at lines 362--363
+Overfull \hbox (2.11504pt too wide) in paragraph at lines 363--364
 []\OT1/cmr/m/n/10 Il client HTTP in-via al server un mes-sag-gio di richi-esta 
 che in-clude il per-corso /chem-istry/index.html 
  []
 
 LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 
-383.
-LaTeX Font Info:    No file OMScmtt.fd. on input line 383.
+384.
+LaTeX Font Info:    No file OMScmtt.fd. on input line 384.
 
 LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
 (Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbackslash' on input line 383.
+(Font)              for symbol `textbackslash' on input line 384.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 381--388
+Underfull \hbox (badness 10000) in paragraph at lines 382--389
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 381--388
+Underfull \hbox (badness 10000) in paragraph at lines 382--389
 
  []
 
@@ -445,20 +445,20 @@ Underfull \hbox (badness 10000) in paragraph at lines 381--388
 File: images/http_request_message.png Graphic file (type png)
 <use images/http_request_message.png>
 Package pdftex.def Info: images/http_request_message.png  used on input line 40
-1.
+2.
 (pdftex.def)             Requested size: 226.48395pt x 128.96721pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 409--419
+Underfull \hbox (badness 10000) in paragraph at lines 410--420
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 409--419
+Underfull \hbox (badness 10000) in paragraph at lines 410--420
 
  []
 
 [17 <./images/http_request_message.png>] [18]
-Overfull \hbox (18.8377pt too wide) in paragraph at lines 472--473
+Overfull \hbox (18.8377pt too wide) in paragraph at lines 473--474
 []\OT1/cmr/m/n/10 In cache mem-o-rizza sia l'oggetto che la data di ul-tima mod
 -i-fica pre-sente nell'intestazione \OT1/cmtt/m/n/10 Last-Modified 
  []
@@ -467,23 +467,23 @@ Overfull \hbox (18.8377pt too wide) in paragraph at lines 472--473
 <images/SMTP_example.png, id=79, 1153.30875pt x 297.11pt>
 File: images/SMTP_example.png Graphic file (type png)
 <use images/SMTP_example.png>
-Package pdftex.def Info: images/SMTP_example.png  used on input line 508.
+Package pdftex.def Info: images/SMTP_example.png  used on input line 509.
 (pdftex.def)             Requested size: 226.48395pt x 58.34196pt.
  [20 <./images/SMTP_example.png>] [21] [22]
 <images/dns_query_example.png, id=91, 546.04pt x 576.1525pt>
 File: images/dns_query_example.png Graphic file (type png)
 <use images/dns_query_example.png>
-Package pdftex.def Info: images/dns_query_example.png  used on input line 623.
+Package pdftex.def Info: images/dns_query_example.png  used on input line 624.
 (pdftex.def)             Requested size: 226.48395pt x 238.97574pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 637--641
+Underfull \hbox (badness 10000) in paragraph at lines 638--642
 
  []
 
 [23 <./images/dns_query_example.png>] [24] [25] [26] [27] [28]
 Capitolo 3.
 
-Overfull \hbox (1.50514pt too wide) in paragraph at lines 821--822
+Overfull \hbox (1.50514pt too wide) in paragraph at lines 822--823
 []\OT1/cmr/m/n/10 Un pro-to-collo di trasporto non for-nisce al-cuna in-di-cazi
 one su come i mes-saggi siano trasfer-iti all'interno
  []
@@ -495,45 +495,45 @@ one su come i mes-saggi siano trasfer-iti all'interno
 File: images/MultiplexingAndDemultiplexing.png Graphic file (type png)
 <use images/MultiplexingAndDemultiplexing.png>
 Package pdftex.def Info: images/MultiplexingAndDemultiplexing.png  used on inpu
-t line 845.
+t line 846.
 (pdftex.def)             Requested size: 271.7835pt x 203.8323pt.
  [30 <./images/MultiplexingAndDemultiplexing.png>] [31]
 <images/UDP_packet_structure.png, id=123, 596.2275pt x 464.73625pt>
 File: images/UDP_packet_structure.png Graphic file (type png)
 <use images/UDP_packet_structure.png>
 Package pdftex.def Info: images/UDP_packet_structure.png  used on input line 91
-1.
+2.
 (pdftex.def)             Requested size: 226.48395pt x 176.53069pt.
  [32 <./images/UDP_packet_structure.png>]
 <images/rdt_1.0.png, id=127, 813.0375pt x 734.745pt>
 File: images/rdt_1.0.png Graphic file (type png)
 <use images/rdt_1.0.png>
-Package pdftex.def Info: images/rdt_1.0.png  used on input line 954.
+Package pdftex.def Info: images/rdt_1.0.png  used on input line 955.
 (pdftex.def)             Requested size: 226.48395pt x 204.67332pt.
  [33 <./images/rdt_1.0.png>]
 <images/rdt_2.0.png, id=131, 865.2325pt x 790.955pt>
 File: images/rdt_2.0.png Graphic file (type png)
 <use images/rdt_2.0.png>
-Package pdftex.def Info: images/rdt_2.0.png  used on input line 980.
+Package pdftex.def Info: images/rdt_2.0.png  used on input line 981.
 (pdftex.def)             Requested size: 452.9679pt x 414.08691pt.
  [34 <./images/rdt_2.0.png>]
 <images/rdt_sender_2.1.png, id=135, 940.51375pt x 615.29875pt>
 File: images/rdt_sender_2.1.png Graphic file (type png)
 <use images/rdt_sender_2.1.png>
-Package pdftex.def Info: images/rdt_sender_2.1.png  used on input line 1002.
+Package pdftex.def Info: images/rdt_sender_2.1.png  used on input line 1003.
 (pdftex.def)             Requested size: 452.9679pt x 296.33524pt.
 
 [35 <./images/rdt_sender_2.1.png>]
 <images/rdt_receiver_2.1.png, id=139, 1066.98625pt x 561.09625pt>
 File: images/rdt_receiver_2.1.png Graphic file (type png)
 <use images/rdt_receiver_2.1.png>
-Package pdftex.def Info: images/rdt_receiver_2.1.png  used on input line 1010.
+Package pdftex.def Info: images/rdt_receiver_2.1.png  used on input line 1011.
 (pdftex.def)             Requested size: 452.9679pt x 238.20161pt.
  [36 <./images/rdt_receiver_2.1.png>]
 <images/gbn.png, id=144, 962.59625pt x 234.8775pt>
 File: images/gbn.png Graphic file (type png)
 <use images/gbn.png>
-Package pdftex.def Info: images/gbn.png  used on input line 1072.
+Package pdftex.def Info: images/gbn.png  used on input line 1073.
 (pdftex.def)             Requested size: 452.9679pt x 110.52504pt.
 
 [37] [38 <./images/gbn.png>]
@@ -541,7 +541,7 @@ Package pdftex.def Info: images/gbn.png  used on input line 1072.
 File: images/tcp_segment_structure.png Graphic file (type png)
 <use images/tcp_segment_structure.png>
 Package pdftex.def Info: images/tcp_segment_structure.png  used on input line 1
-129.
+130.
 (pdftex.def)             Requested size: 362.37569pt x 283.50488pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
@@ -557,14 +557,14 @@ Capitolo 4.
 File: images/CommutazioneTramiteBus.png Graphic file (type png)
 <use images/CommutazioneTramiteBus.png>
 Package pdftex.def Info: images/CommutazioneTramiteBus.png  used on input line 
-1513.
+1514.
 (pdftex.def)             Requested size: 135.89174pt x 135.88232pt.
 <images/CommutazioneReteDiInterconnessione.png, id=193, 724.95844pt x 472.76625
 pt>
 File: images/CommutazioneReteDiInterconnessione.png Graphic file (type png)
 <use images/CommutazioneReteDiInterconnessione.png>
 Package pdftex.def Info: images/CommutazioneReteDiInterconnessione.png  used on
- input line 1519.
+ input line 1520.
 (pdftex.def)             Requested size: 135.89174pt x 88.6146pt.
  [51 <./images/CommutazioneTramiteBus.png (PNG copy)>] [52 <./images/Commutazio
 neReteDiInterconnessione.png>] (Appunti di reti.aux)
@@ -610,7 +610,7 @@ grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/Alessandro/App
 Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/
 Alessandro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt8.p
 fb>
-Output written on "Appunti di reti.pdf" (52 pages, 1904480 bytes).
+Output written on "Appunti di reti.pdf" (52 pages, 1904717 bytes).
 PDF statistics:
  277 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

@@ -1508,6 +1508,19 @@ La struttura di commutazione può essere ottenuta in vari modi:
 	\item Commutazione attraverso rete di interconnessione: Per superare la limitazione di un singolo bus condiviso si usa una rete di interconnessione più sofisticata in cui ogni porta in ingresso è collegata con un bus dedicato a ogni porta di uscita. Quando un pacchetto giunge sulla porta di ingresso A che deve essere inoltrato sulla porta di uscita X e contemporaneamente giunge un pacchetto sulla porta B che deve essere inoltrato sulla porta di uscita Y, le due operazioni possono essere fatte in contemporanea. Ma se sia su A che B arriva un pacchetto che deve essere inoltrato su X, uno dei due dovrà rimanere in coda nella porta di input.
 \end{itemize}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{images/CommutazioneTramiteBus.png}
+	\caption{Commutazione tramite bus}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{images/CommutazioneReteDiInterconnessione.png}
+	\caption{Commutazione tramite rete di interconnessione}
+\end{figure}
+
+
 \subsection*{4.2.3}
 [useless]
 

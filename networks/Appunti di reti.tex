@@ -1431,7 +1431,7 @@ Qui un controller remoto, fisicamente separato dagli altri router, calcola e dis
 
 Ciò è il cuore del cosiddetto "Software Defined Networking (SDN)" perché vi è un solo software che definisce la struttura logica della rete.
 
-\section*{4.1.2 Modelli di servizio}
+\subsection*{4.1.2 Modelli di servizio}
 Consideriamo i diversi tipi di servizio che un livello di rete potrebbe offrire:
 \begin{itemize}
 	\item Consegna garantita
@@ -1526,6 +1526,17 @@ La struttura di commutazione può essere ottenuta in vari modi:
 [useless]
 
 \subsection*{4.2.4 Dove si verifica l'accodamento?}
+Si possono formare code di pacchetti sia presso le porte di ingresso sia quelle di uscita. La probabilità e la lunghezza che una si verifica dipendono dal traffico di rete e dalla struttura di commutazione.
+
+Quando queste code crescono, la memoria dei router può esaurirsi e quindi può avvenire una perdita di pacchetti in quanto non c'è memoria sufficiente per memorizzare quelli in arrivo.
+
+Sia $R_{switch}$ il tasso al quale i pacchetti vengono trasferiti dalla porta di input a quella di output e che i pacchetti arrivino alle porte di input a un tasso di $R_{line}$ e che ci siano $N$ porte. Se $R_{switch} \geq N \times R_{line}$ non ci sarà accodamento. Infatti anche supponendo il caso peggiore in cui arrivino $N$ pacchetti simultaneamente alle $N$ porte di input, avranno il tempo di essere smistati prima che ne arrivino altri. \textbf{e se destinati alla stessa porta?}
+
+\subsubsection*{Accodamento in ingresso}
+Che cosa avviene se la struttura di commutazione non è sufficientemente veloce?
+In questo caso può verificarsi accodamento alle porte di ingresso. Sebbene sia possibile trasferire più pacchetti in parallelo, se due pacchetti sono destinati alla stessa porta di uscita uno dei due dovrà attendere. Se dietro al pacchetto che aspetta vi è un altro pacchetto destinato a una porta libera, esso dovrà comunque aspettare! Questo fenomeno è noto come "Blocco in testa alla coda", ovvero quando un pacchetto in ingresso deve comunque aspettare anche se la sua destinazione è libera.
+
+
 
 
 

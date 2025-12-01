@@ -1539,8 +1539,57 @@ Sia $R_{switch}$ il tasso al quale i pacchetti vengono trasferiti dalla porta di
 Che cosa avviene se la struttura di commutazione non è sufficientemente veloce?
 In questo caso può verificarsi accodamento alle porte di ingresso. Sebbene sia possibile trasferire più pacchetti in parallelo, se due pacchetti sono destinati alla stessa porta di uscita uno dei due dovrà attendere. Se dietro al pacchetto che aspetta vi è un altro pacchetto destinato a una porta libera, esso dovrà comunque aspettare! Questo fenomeno è noto come "Blocco in testa alla coda", ovvero quando un pacchetto in ingresso deve comunque aspettare anche se la sua destinazione è libera.
 
+\subsubsection*{Accodamento in uscita}
+Supponiamo ancora che $R_{switch}$ sia $N \times R_{line}$ e che i pacchetti che giungono a ciascuna delle $N$ porte in ingresso sono destinati alla stessa porta di uscita. Dato che la porta di uscita può trasmettere solo un pacchetto in un intervallo stabilito, $N-1$ pacchetti dovranno mettersi in coda sul collegamento di uscita. Quindi è possibile che si formino code di pacchetti alle porte di uscita anche quando la struttura di commutazione è $N$ volte più veloce della velocità di linea delle porte. \textbf{CAPIRE QUESTO IN RELAZIONE A QUELLO CHE HA DETTO PRIMA}
 
+In assenza di sufficiente memoria per inserire nel buffer il nuovo pacchetto occorrerà stabilire se scartare esso o uno dei pacchetti già in coda.
 
+Uno schedulatore di pacchetti deve stabilire in quale ordine trasmetterli.
+
+\subsection*{4.2.5 Schedulazione di pacchetti}
+Bisogna determinare in che ordine i pacchetti vengono trasmessi sulla porta di uscita.
+
+\subsubsection*{FIFO: First In First Out}
+I pacchetti vengono trasmessi nello stesso ordine con cui sono arrivati in coda.
+
+\subsubsection*{Code con priorità}
+I pacchetti sono classificati in base alla loro priorità. I pacchetti con priorità più alta verranno sempre trasmessi prima rispetto a quelli con priorità più bassa. Se ci sono più pacchetti nella stessa classe di priorità, essi verranno scelti tramite la strategia FIFO.
+
+Se un pacchetto appartenente alla classe a bassa priorità sta venendo trasmesso e nel frattempo sopraggiunge uno ad alta priorità, si aspetta che la trasmissione del primo sia completa prima di trasmettere il secondo. La trasmissione dei pacchetti non può essere interrotta una volta iniziata.
+
+\subsubsection*{Round robin e accodamento equo ponderato}
+In Round robin i pacchetti vengono suddivisi in classi ma senza una rigida priorità che differenzia una dall'altra. È infatti prevista una sequenza ciclica tra classi. Se ci sono tre classi prima viene inviato un pacchetto appartenente alla classe uno, poi uno appartenente alla classe due e infine uno appartenente alla classe 3 per poi riprendere nuovamente dall'inizio.
+
+L'accodamento equo ponderato funziona in maniera simile ma a ciascuna classe $i$ è assegnata un peso $w_i$. La classe $i$ avrà la garanzia di ricevere una certa frazione di larghezza di banda \textbf{TODO: Capire!!!}
+
+\section*{4.3 IP, IPv4, IPv6 e indirizzamento}
+Il protocollo principale del livello di rete di Internet è il protocollo IP. Attualmente sono in uso due versioni di IP: IPv4 e IPv6.
+
+Il pacchetto a livello di rete è noto come datagramma.
+
+\subsection*{4.3.1 Formato dei datagrammi IPv4}
+I principali campi dei datagrammi IPv4 sono i seguenti:
+
+\begin{itemize}
+	\item Numero di versione di IP
+	\item Lunghezza dell'intestazione: necessaria in quanto a causa delle opzioni facoltative, le intestazioni non sono tutte della stessa lunghezza
+	\item Tipo di servizio: distingue i vari tipi di datagrammi, ad esempio quelli utilizzati per il traffico in tempo reale che richiedono basso ritardo, o quelli che richiedono alto throughput ecc..
+	\item Lunghezza dell'intero datagramma: essendo un campo a 16 bit permette a un datagramma di essere grande potenzialmente $2^{16}$ byte ma nella realtà raramente eccede i 1500 per non superare la lunghezza massima del campo dati dei frame Ethernet.
+	\item Identificatore, flag, offset di frammentazione: spiegato più nel dettaglio più avanti
+	\item Tempo di vita (TTL): Ad ogni datagramma viene assegnato un Time To Live che viene decrementato ogni volta che viene elaborato da un router. Quando arriva a 0, il datagramma viene scartato. Ciò assicura che un pacchetto non rimanga nella rete per sempre.
+	\item Protocollo: Indica il protocollo del livello di trasporto che dovrà ricevere i dati del datagramma. Esso è il livello di collegamento tra il livello di trasporto e di rete.
+	\item Checksum dell'intestazione: Per rilevare errori. Si noti che dato che TTL cambia ogni volta, il checksum deve essere ricalcolato e aggiornato in ogni router. Perché TCP/IP effettua la verifica dell'errore sia a livello di trasporto che di rete? In primo luogo il checksum di IP è solo sulle intestazioni e secondo TCP/UDP e IP non appartengono necessariamente allo stesso stack di protocolli. Possono venire create pile di protocolli completamente diverse e pertanto è conveniente includere un piccolo controllo degli errori anche a questo livello.
+	\item Indirizzi IP sorgente e destinazione
+	\item Opzioni
+	\item Dati
+\end{itemize}
+
+\subsection*{4.3.2 Frammentazione dei datagrammi IPv4}
+La massima quantità di dati che un frame a livello di collegamento può trasportare è detta MTU. Per Ethernet è 1500 byte.
+
+Se tra host mittente e host destinatario ci sono solo collegaenti Ethernet, allora si costruirebbero datagrammi che non eccedono mai 1500 byte, ma nella realtà dei fatti possono esserci diversi protocolli a livello di collegamento tra i due pertanto al mittente non è nota la dimensione massima che può inviare.
+
+La soluzione constiste nel frammentare i dati del datagramma IP in due o più dtagrammi  IP più piccoli, detti frammenti. Quest'ultimi dovranno però essere riassemblati prima di raggiungere il livello di trasporto nella destinazione in quanto TCP e UDP si aspettano di ricevere segmenti completi dal livello di rete.
 
 
 

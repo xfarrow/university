@@ -138,6 +138,9 @@ Con $La/R$ si denota l'intensità di traffico e il risultato è un numero adimen
 	In questo caso il primo pacchetto inizia a uscire dalla coda immediatamente, il secondo pacchetto deve aspettare $L/R$ secondi prima che il suo primo bit esca dalla coda, il terzo deve aspettare $2 * \frac{L}{R}$, il quarto deve aspettare $3 * \frac{L}{R}$ secondi e così via. Più in generale, il pacchetto N° deve aspettare $(N-1) * \frac{L}{R}$.
 	
 	Per rendere più chiaro il concetto facciamo un esempio. Si supponga che arrivino 10 pacchetti all'istante 0 ognuno grande 50bit con una velocità di trasmissione $R$ pari a  1000bit/s. Il primo pacchetto inizia a uscire dalla coda subito, ma il primo bit del secondo pacchetto deve aspettare $\frac{L}{R} = \frac{50}{1000} = 0.05s$ prima che l'intero pacchetto precedente sia completamente uscito. Il decimo pacchetto deve aspettare $(9) * 0.05 = 0.45s$ e, nel momento in cui il suo trasferimento sul collegamento sarà terminato, a tempo $0.5$, ne subentrano altri 10, di cui il primo non deve aspettare nulla prima che inizia a essere trasferito.
+	
+	Questo è il cosiddetto "burst", ovvero si tratta di pacchetti che arrivano simultaneamente. Infatti, nell'esempio sopracitato, se arrivano 500bit/s in un tempo sufficientemente dilazionato, il nodo da 1000 bit/s non avrebbe problemi a smaltirli.
+	Per essere più precisi devono arrivare in un tempo dilazionato almeno $L/R$ secondi l'uno dall'altro affinché non si creino code.
 
 	Ciò dimostra che la condizione $La/R \leq 1$, non garantisce assenza di attese.
 

@@ -1591,6 +1591,53 @@ Se tra host mittente e host destinatario ci sono solo collegaenti Ethernet, allo
 
 La soluzione constiste nel frammentare i dati del datagramma IP in due o più dtagrammi  IP più piccoli, detti frammenti. Quest'ultimi dovranno però essere riassemblati prima di raggiungere il livello di trasporto nella destinazione in quanto TCP e UDP si aspettano di ricevere segmenti completi dal livello di rete.
 
+I datagrammi vengono riassemblati nei sistemi periferici anziché che nei router per motivi di prestazioni.
+
+I campi atti allo scopo della frammentazione e riassemblaggio sono i campi identificatore, flag e offset.
+
+\begin{itemize}
+	\item Identificatore: Ogni datagramma completo ha un proprio identificativo. Quando il router lo divide, ogni suo frammento avrà lo stesso numero identificativo. Il sistema periferico così potrà capire che fanno parte dello stesso datagramma
+	\item Offset: Specifica l'esatto ordine che i frammenti devono avere affinché il datagramma sia ricostruito. Utile anche per determinare se un frammento è stato perduto
+	\item Flag: Se esistessero solo i primi due, sarebbe impossibile determinare se l'ultimo frammento di un datagramma sia arrivato. Pertanto il campo flag dell'ultimo frammento viene impostato a \texttt{0}, mentre in tutti gli altri è posto a \texttt{1}
+\end{itemize}
+
+\subsection*{4.3.3 Indirizzamento IPv4}
+Dato che il compito di un router è quello di ricevere datagrammi da un collegamento e inoltrarli su un altro, questo deve necessariamente essere connesso a due collegamenti, presentando dunque più interfacce, una per ciascun collegamento.
+
+Tutte le interfacce hanno un proprio indirizzo IP, pertanto un indirizzo IP non è associato a uno specifico host o a uno specifico router, bensì alle loro interfacce.
+Ciò è dovuto al fatto che è l'interfaccia che fa parte di una rete, non l'host in sè: si può avere un host su più reti se ha più interfacce. Questo è il caso dei router che fanno da ponte tra una rete e l'altra.
+
+Un indirizzo IP è composto da 32 bit e viene espresso in forma decimale separando ogni byte dall'altro con un punto (es. \texttt{192.168.1.87}).
+Gli indirizzi non possono assulutamente essere scelti in modo arbitrario: una parte di esso è determinata dalla sottorete a cui è collegato.
+
+La strategia di assegnazione degli indirizzi Internet è detta CIDR. Ogni indirizzo IP ha un ulteriore identificatore: la maschera di sottorete.
+
+Indirizzo IP e maschera di sottorete insieme prendono la forma \texttt{a.b.c.d/x}. Ciò rappresenta che i primi \texttt{x} bit più a sinistra dell'indirizzo definiscono l'indirizzo della sottorete mentre i restanti \texttt{32-x} bit sono usati per identificare un dispositivo interno o un'ulteriore sottorete.
+
+Ad esempio l'indirizzo dell'host \texttt{192.168.1.52} che ha maschera di sottorete \texttt{24} viene scritto come \texttt{192.168.1.52/24} e indica che l'indirizzo della sottorete è \texttt{192.168.1.0} e tutti i dispositivi ad essa collegati dovranno avere la forma \texttt{192.168.1.xxx}. 
+
+La dimensione della maschera di sottorete è scelta dall'amministratore del sistema, con limiti inferiori alla sua dimensione. Ad esempio se ad un amministratore viene assegnato di gestire lo spazio \texttt{192.168.1.0/24} potrà creare al suo interno sottoreti di dimensione da 25 a 31 bit.
+
+Prima del CIDR gli indirizzi IP erano suddivisi in 3 classi: A,B e C con maschere di sottorete fisse rispettivamente di 8,16 e 24 bit. Ciò era poco flessibile.
+
+Le sottoreti sono parte fondamentale di Internet: non esiste alcun host o router fuori da una sottorete. Inoltre le sottoreti permettono di effettuare il routing: i router non instradano il traffico basandosi sull'indirizzo dell'host specifico, bensì sulla sua sottorete. A titolo esemplificativo, quando si invia un pacchetto a \texttt{192.168.1.52/24} tutti i router tranne l'ultimo lo indirizzeranno alla sottorete \texttt{192.168.1.0/24}. Sarà poi l'ultimo router a indirizzarlo a \texttt{.52}.
+
+Poiché Internet è semplicemente un insieme di sottoreti, \texttt{192.168.1.0/24} potrebbe essere una sottorete di \texttt{192.168.0.0/16} e quindi un pacchetto potrebbe essere inviato a questa sottorete, la quale si occuperà di inoltrarlo alla sottorete \texttt{192.168.1.0/24}.
+
+Esistono diverse tipologie di Indirizzi IP:
+\begin{itemize}
+	\item Indirizzo di broadcast: \texttt{255.255.255.255}. Quando un host emette un datagramma con questa destinazione, il router lo inoltra a tutti gli host della sua sottorete. In teoria potrebbe inoltrarlo anche alle sottoreti confinanti (raggiungendo ogni host terrestre) ma solitamente non lo fa
+	\item Indirizzo di loopback: \texttt{127.0.0.1}. Un host che emette un datagramma con questo indirizzo IP lo inoltra a sè stesso
+	\item Indirizzi IP pubblici e privati: alcune classi di indirizzi IP sono privati: un host che riceve un pacchetto con destinazione rappresentata da un indirizzo IP privato non verrà inoltrato alle sottoreti confinanti
+\end{itemize}
+
+Si noti come un router casalingo abbia solo due interfacce, benché possa avere più porte locali Ethernet. C'è una porta verso la sottorete confinate e una porta locale, la quale è connessa a uno switch di livello 2 interno che ci permette di avere più porte Ethernet.
+
+\subsubsection*{Come ottenere un blocco di indirizzi}
+Un amministratore di rete può contattare un ISP che gli fornisce un indirizzo IP di sottorete. A sua volta questo amministratore potrebbe a sua volta suddividere la rete in diverse sottoreti diventando egli stesso un ISP. È così che funzionano gli ISP: in modo gerarchico.
+
+Ma gli ISP di primo livello da dove ottengono i loro indirizzi? Dallo ICANN, il quale si occupa anche di gestire i root DNS server.
+
 
 
 

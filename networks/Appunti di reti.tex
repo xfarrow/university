@@ -1411,7 +1411,7 @@ Il ruolo del piano dei dati di ciascun router intermedio è quello di inoltrare 
 I router estraggono dai datagrammi dei campi di intestazione che usano come indice nella tabella di inoltro. Il valore trovato indica a quale interfaccia di uscita il segmento debba essere diretto.
 \begin{table}[h!]
 	\centering
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{|c|c|}
 		\hline
 		\textbf{Valore di intestazione} & \textbf{Collegamento di uscita} \\
 		\hline
@@ -1638,6 +1638,106 @@ Un amministratore di rete può contattare un ISP che gli fornisce un indirizzo I
 
 Ma gli ISP di primo livello da dove ottengono i loro indirizzi? Dallo ICANN, il quale si occupa anche di gestire i root DNS server.
 
+\subsubsection*{DHCP}
+Gli indirizzi degli host possono essere configurati o manualmente oppure utilizzando il protocollo DHCP (Dynamic Host Configuration Protocol) che permette agli host di ricevere un indirizzo IP automaticamente nonché informazioni aggiuntive quali la maschera di sottorete, l'indirizzo del router per uscire dalla sottorete e l'indirizzo del suo DNS locale.
+
+DHCP è un protocollo client-server. Ogni sottorete dispone di un server DHCP.
+
+I quattro passi per ricevere queste informazioni sono:
+
+\begin{enumerate}
+	\item Individuazione del server DHCP: Questa operazione è svolta usando un messaggio DHCP discover che un client invia in pacchetto UDP sulla porta 67. Poiché l'host non conosce l'indirizzo IP della rete alla quale è collegato e ancor meno l'indirizzo di un server DHCP. Per questo motivo la destinazione viene impostata all'indirizzo di broadcast \texttt{255.255.255.255} e come sorgente viene impostato il valore \texttt{0.0.0.0}
+	\item Offerta del server DHCP: Un server DHCP che riceve questo messaggio risponde con un DHCP offer che contiene l'indirizzo IP proposto al client, la maschera di sottorete e la durata della connessione. Anche questo messaggio viene inviato a \texttt{255.255.255.255} in quanto il client non ha ancora un indirizzo
+	\item Richiesta DHCP: Se ci sono più offerte, il client ne sceglie una e manda un DHCP Request in broadcast che riporta i parametri di configurazione
+	\item Il server risponde con un DHCP ACK, sempre in broadcast. Da questo punto in poi il client inizierà a usare la configurazione scelta.
+\end{enumerate}
+
+Si noti che ogni volta che un nodo si connette a una sottorete, con la tecnica del DHCP avrà un indirizzo (probabilmente) sempre diverso, pertanto risulta impossibile mantenere una connessione TCP mentre si è in movimento. 
+
+\subsection*{4.3.4 NAT}
+Esistono innumerevoli host (interfacce) con lo stesso indirizzo IP privato, ma come viene gestito l'indirizzamento dei pacchetti verso l'Internet globale visto che si richiede che tutti gli indirizzi siano univoci? La risposta è il NAT (Network Address Translation). Un router abilitato al NAT nasconde i dettagli della rete domestica al mondo esterno e appare come un host finale.
+
+Viene impiegata una tabella di traduzione NAT. Capiamo come funziona con un esempio: L'host \texttt{10.0.1.1} vuole comunicare con il mondo esterno e assegna come numero di porta di origine un numero arbitrariamente scelto, diciamo \texttt{3345}. Il router NAT, quando riceve il pacchetto, cambia il numero di porta di origine in un altro numero, diciamo \texttt{5001} e associa una corrispondenza \texttt{(10.0.1.1, 3345, 5001)} nella sua tabella di traduzione NAT. Inoltre sostituisce l'IP di origine privato con il proprio IP lato WAN, univoco. Quando il server risponde, ignaro della manipolazione fatta, invierà un pacchetto al router alla porta \texttt{5001} il quale troverà che \texttt{5001} è referenziato da \texttt{(10.0.1.1, 3345)} e pertanto lo invia a questa coppia IndirizzoIP:Porta riscrivendo i campi Indirizzo IP destinazione e porta nel pacchetto.
+
+Questa tecnica permette di ridurre il numero di indirizzi IP univoci utilizzati, dato che ogni rete locale ne userà soltanto uno invece che uno per ogni host.
+
+Tale tecnica rompe un po' i principi di Internet:
+\begin{itemize}
+	\item I router devono poter operare al livello 4 per poter leggere e scrivere le porte, violando la distinzione di responsabilità
+	\item Le porte sono state concepite per far comunicare processi, non host
+	\item I nodi dovrebbero poter comunicare senza manipolazione di indirizzi IP
+\end{itemize}
+
+\subsection*{4.3.5 IPv6}
+Lo spazio di indirizzamento IPv4 stava cominciando ad esaurirsi. Per ovviare a ciò si è sviluppato l'IPv6. I progettisti colsero l'opportunità per apportare ulteriori migliorie rispetto alla precedente versione.
+
+\subsubsection*{Formato dei datagrammi IPv6}
+Le differenze più significative tra IPv4 e IPv6 sono:
+\begin{itemize}
+	\item Indirizzamento esteso: I 32 bit di IPv4 passano a 128
+	\item Intestazione ottimizza: Alcuni campi di IPv4 sono stati eliminati rendendo l'intestazione a lunghezza fissa di 40 byte. La lunghezza fissa migliora le prestazioni
+	\item Etichettatura dei flussi: IPv6 permette al mittente di rihiedere un servizio speciale come ad esempio una qualità del servizio diverso e la trasmissione in tempo reale
+\end{itemize}
+
+In un datagramma IPv6 sono definiti i seguenti campi:
+\begin{itemize}
+	\item Versione di IP
+	\item Classe do traffico: Può essere utilizzato per attribuire priorità a determinati datagrammi
+	\item Etichetta di flusso: Utilizzato per identificare un flusso di datagrammi. Identificare un flusso permette di richiedere un servizio speciale per quest'ultimo
+	\item Lunghezza del payload
+	\item Intestazione successiva: Identifica il protocollo del livello di trasporto al quale verranno consegnati i dati contenuti nei datagrammi
+	\item Limite di hop
+	\item Indirizzi sorgente e destinazione
+	\item Dati (payload)
+\end{itemize}
+
+Rispetto a IPv4 notiamo che sono stati rimossi:
+\begin{itemize}
+	\item Informazioni di frammentazione e di riassemblaggio: IPv6 non consente la frammentazione. Se un nodo riceve un datagramma IPv6 troppo frande per essere inoltrato sul collegamento di uscita, lo elimina e comunica al mittente l'errore riscontrato. Sarà sua cura rispedire il datagramma di dimensione corretta. È stato scelto di rimuovere tale caratteristica perché consuma tempo e risorse
+	\item Checksum: I progettisti la ritenevano ridondante in quanto presente a livello di collegamento e di trasporto
+	\item Opzioni
+\end{itemize}
+
+\subsubsection*{Passaggio da IPv4 a IPv6}
+I sistemi IPv6 sono retrocompatibili mentre i sistemi IPv4 non sono in grado di gestire datagrammi IPv6. Per ovviare a ciò esistono diverse opzioni:
+Dichiarare una giornata in cui tutti i sistemi vengono spenti e aggiornati da IPv4 a IPv6, che però risulta poco realistica, oppure effettuare il cosiddetto tunneling.
+
+Supponiamo che due nodi IPv6 vogliano comunicare ma siano connessi da router intermedi che supportano solo IPv4. Il mittente prende l'intero datagramma IPv6 e lo pone nel campo dati di un datagramma IPv4. Immette il valore \texttt{41} nel campo "Versione" in modo da far capire al ricevente che quel pacchetto IPv4 ne contiene uno IPv6 e lo manda in rete. I router intermedi lo instraderanno normalmente. Il ricevente estrarrà semplicemente il datagramma IPv6 dal campo dati.
+
+\section*{4.4 Inoltro generalizzato e SDN}
+Ricordiamo, dai paragrafi precedenti, che l'inoltro basato sulla destinazione è caratterizzato da due passi: (1) ricerca dell'indirizzo IP di destinazione e quindi (2) invio del pacchetto attraverso la struttura di commutazione a una specifica porta di uscita. Il primo passo è un evento di "match" mentre il secondo è un evento di "action".
+
+Il paradigma match-action non è relegato alla sola azione di inoltro dei pacchetti: consideriamolo in maniera più generale dove l'operazione di match può essere effettuata su più campi dell'intestazione di un pacchetto e non soltanto a un livello nello stack dei protocolli. Ad esempio si possono controllare le intestazioni sia di IP che di TCP. L'operazione di Action è un'azione intrapresa a seguito di un match come inoltro, bilancio di carico, firewalling etc.
+
+Nell'inoltro generalizzato una tabella match-action generalizza la tabella di inoltro trattata precedentemente. I dispositivi di inoltro che fanno uso della tabella match-action sono denominati "packet switch" (facenti parte del piano dei dati). Le tabelle match-action sono calcolate e gestite da un controller remoto (facente parte del piano di controllo).
+
+Ogni riga in una tabella di inoltro match-action contiene (1) un insieme di valori dei campi dell'intestazione con i quali il pacchetto entrante verrà confrontato e (2) un insieme di azioni che devono essere intraprese quando un pacchetto viene associato a un'occorrenza.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Match} & \textbf{Action} \\
+		\hline
+		IP Source=151.21.* ; TCP Dest Port=21 & Block \\
+		IP Protocol=IPv6 ; UDP Source Port=5120 & Forward on port 2 \\
+		\hline
+	\end{tabular}
+	\caption*{Esempio di tabella match-action}
+\end{table}
+
+\subsection*{4.4.1 Match}
+È possibile fare il match confrontando i campi delle intestazioni di 3 livelli (collegamento, rete, trasporto), violando così il principio di stratificazione.
+
+Una priorità viene associata a ogni occorrenza della tabella. Se un pacchetto corrisponde a più occorrenze viene scelta quella con la priorità più alta.
+
+\subsection*{4.4.2 Action}
+Di seguito sono specificate alcune delle più importanti azioni possibili:
+\begin{itemize}
+	\item Inoltro: Un pacchetto in entrata può essere inoltrato ad una particolare porta di uscita oppure in broadcast
+	\item Scarto del pacchetto
+	\item Modifica dei campi: I valori nei campi d'intestazione dei pacchetti possono essere riscritti prima che vengano inoltrati alla porta di uscita
+\end{itemize}
 
 
 

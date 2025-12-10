@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Debian) (preloaded format=pdflatex 2025.10.18)  8 DEC 2025 22:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Debian) (preloaded format=pdflatex 2025.10.18)  10 DEC 2025 23:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -543,32 +543,36 @@ File: images/CommutazioneReteDiInterconnessione.png Graphic file (type png)
 Package pdftex.def Info: images/CommutazioneReteDiInterconnessione.png  used on
  input line 1523.
 (pdftex.def)             Requested size: 135.89174pt x 88.6146pt.
- [51 <./images/CommutazioneTramiteBus.png (PNG copy)>] [52 <./images/Commutazio
-neReteDiInterconnessione.png>] [53]
-Overfull \hbox (4.75398pt too wide) in paragraph at lines 1594--1595
+ [51 <./images/CommutazioneTramiteBus.png (PNG copy)>]
+Underfull \hbox (badness 10000) in paragraph at lines 1548--1552
+
+ []
+
+[52 <./images/CommutazioneReteDiInterconnessione.png>] [53]
+Overfull \hbox (4.75398pt too wide) in paragraph at lines 1613--1614
 []\OT1/cmr/m/n/10 I data-grammi ven-gono ri-assem-blati nei sis-temi per-iferic
 i anzich^^Se che nei router per mo-tivi di prestazioni. 
  []
 
-[54]
-Overfull \hbox (25.00406pt too wide) in paragraph at lines 1658--1659
+[54] [55]
+Overfull \hbox (25.00406pt too wide) in paragraph at lines 1677--1678
 \OT1/cmr/m/n/10 Esistono in-nu-merevoli host (in-ter-facce) con lo stesso in-d-
 i-rizzo IP pri-vato, ma come viene gestito l'indirizzamento
  []
 
-[55]
-Overfull \hbox (1.86626pt too wide) in paragraph at lines 1678--1679
+
+Overfull \hbox (1.86626pt too wide) in paragraph at lines 1697--1698
 []\OT1/cmr/m/n/10 Intestazione ot-timizza: Al-cuni campi di IPv4 sono stati eli
 m-i-nati ren-dendo l'intestazione a lunghezza
  []
 
 [56]
-Overfull \hbox (16.94963pt too wide) in paragraph at lines 1714--1715
+Overfull \hbox (16.94963pt too wide) in paragraph at lines 1733--1734
 []\OT1/cmr/m/n/10 Ogni riga in una tabella di in-oltro match-action con-tiene (
 1) un in-sieme di val-ori dei campi dell'intestazione
  []
 
-[57] (./Appunti di reti.aux)
+[57] [58] (./Appunti di reti.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -602,10 +606,10 @@ onts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/t
 ype1/public/amsfonts/cm/cmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
 ublic/amsfonts/cm/cmtt8.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1
 000.pfb>
-Output written on "Appunti di reti.pdf" (57 pages, 1903891 bytes).
+Output written on "Appunti di reti.pdf" (58 pages, 1905393 bytes).
 PDF statistics:
- 296 PDF objects out of 1000 (max. 8388607)
- 184 compressed objects within 2 object streams
+ 299 PDF objects out of 1000 (max. 8388607)
+ 186 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  66 words of extra memory for PDF output out of 10000 (max. 10000000)
 

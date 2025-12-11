@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.10.20)  11 DEC 2025 12:59
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.10.20)  11 DEC 2025 15:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -567,35 +567,50 @@ Package pdftex.def Info: images/CommutazioneReteDiInterconnessione.png  used on
  input line 1523.
 (pdftex.def)             Requested size: 135.89174pt x 88.6146pt.
  [51 <./images/CommutazioneTramiteBus.png (PNG copy)>]
-Underfull \hbox (badness 10000) in paragraph at lines 1548--1552
+Underfull \hbox (badness 10000) in paragraph at lines 1550--1554
 
  []
 
 [52 <./images/CommutazioneReteDiInterconnessione.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 1580--1584
+Underfull \hbox (badness 10000) in paragraph at lines 1582--1586
 
  []
 
 [53]
-Overfull \hbox (4.75398pt too wide) in paragraph at lines 1624--1625
+Overfull \hbox (4.75398pt too wide) in paragraph at lines 1626--1627
 []\OT1/cmr/m/n/10 I data-grammi ven-gono ri-assem-blati nei sis-temi per-iferic
 i anzich^^Se che nei router per mo-tivi di prestazioni. 
  []
 
-[54] [55]
-Overfull \hbox (25.00406pt too wide) in paragraph at lines 1688--1689
+[54]
+Underfull \hbox (badness 10000) in paragraph at lines 1642--1646
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1653--1658
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1653--1658
+
+ []
+
+[55]
+Overfull \hbox (25.00406pt too wide) in paragraph at lines 1692--1693
 \OT1/cmr/m/n/10 Esistono in-nu-merevoli host (in-ter-facce) con lo stesso in-d-
 i-rizzo IP pri-vato, ma come viene gestito l'indirizzamento
  []
 
 [56]
-Overfull \hbox (1.86626pt too wide) in paragraph at lines 1708--1709
+Overfull \hbox (1.86626pt too wide) in paragraph at lines 1712--1713
 []\OT1/cmr/m/n/10 Intestazione ot-timizza: Al-cuni campi di IPv4 sono stati eli
 m-i-nati ren-dendo l'intestazione a lunghezza
  []
 
 [57]
-Overfull \hbox (16.94963pt too wide) in paragraph at lines 1744--1745
+Overfull \hbox (16.94963pt too wide) in paragraph at lines 1748--1749
 []\OT1/cmr/m/n/10 Ogni riga in una tabella di in-oltro match-action con-tiene (
 1) un in-sieme di val-ori dei campi dell'intestazione
  []
@@ -643,7 +658,7 @@ grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/Alessandro/App
 Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/
 Alessandro/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt8.p
 fb>
-Output written on "Appunti di reti.pdf" (58 pages, 1929894 bytes).
+Output written on "Appunti di reti.pdf" (58 pages, 1930066 bytes).
 PDF statistics:
  296 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

@@ -1540,6 +1540,8 @@ In questo caso l'accodamento sarà assente nelle porte di input se i pacchetti a
 \subsubsection*{Accodamento in uscita}
 Nonostante una struttura di commutazione molto veloce, è possibile accodamento in uscita. Perché? Dato che la porta di uscita può trasmettere solo un pacchetto alla volta, $N-1$ pacchetti dovranno mettersi in coda sul collegamento di uscita prima di essere trasmessi. Inoltre l'uscita può trasmettere solo a $R_{line}$ e quindi la coda tenderà a crescere indefinitamente. Ciò dimostra che è possibile che si formino code di pacchetti alle porte di uscita anche quando la struttura di commutazione è $N$ volte più veloce della velocità di linea delle porte.
 
+D'altro canto se la struttura di commutazione non è sufficientemente veloce potrebbero non formarsi code alle porte di output. In questo caso ci saranno accodamenti alle porte di input.
+
 \subsubsection*{Accodamento in ingresso}
 Se la struttura di commutazione è abbastanza veloce e l'arrivo di pacchetti è adeguatamente cadenzato, non si formeranno code nella singola porta di input, tuttavia è possibile che un pacchetto debba mettersi in attesa lo stesso perché sta aspettando il trasferimento di un pacchetto da un'altra porta di input verso la propria porta di output.
 
@@ -1590,7 +1592,7 @@ Con un esempio probabilmente è più chiaro:
 	\item Peso classe 3 ($w_3$) = 6
 \end{itemize}
 
-La classe 2 ha un peso $\frac{8}{5+8+6}$ = 0,42 pertanto questo algoritmo darà a questa classe il $42\%$ della banda totale. Se la banda massima è 1000kbit/s allora ogni secondo la classe 2 trasmetterà 420bit
+La classe 2 ha un peso $\frac{8}{5+8+6}$ = 0,42 pertanto questo algoritmo darà a questa classe il $42\%$ della banda totale. Se la banda massima è 1000kbit/s allora ogni secondo la classe 2 trasmetterà 420bit.
 
 \section*{4.3 IP, IPv4, IPv6 e indirizzamento}
 Il protocollo principale del livello di rete di Internet è il protocollo IP. Attualmente sono in uso due versioni di IP: IPv4 e IPv6.
@@ -1635,21 +1637,23 @@ I campi atti allo scopo della frammentazione e riassemblaggio sono i campi ident
 Dato che il compito di un router è quello di ricevere datagrammi da un collegamento e inoltrarli su un altro, questo deve necessariamente essere connesso a due collegamenti, presentando dunque più interfacce, una per ciascun collegamento.
 
 Tutte le interfacce hanno un proprio indirizzo IP, pertanto un indirizzo IP non è associato a uno specifico host o a uno specifico router, bensì alle loro interfacce.
-Ciò è dovuto al fatto che è l'interfaccia che fa parte di una rete, non l'host in sè: si può avere un host su più reti se ha più interfacce. Questo è il caso dei router che fanno da ponte tra una rete e l'altra.
+Ciò è dovuto al fatto che è l'interfaccia che fa parte di una rete, non l'host in sè: si può avere un nodo su più reti se ha più interfacce. Questo è il caso dei router che fanno da ponte tra una rete e l'altra.
 
 Un indirizzo IP è composto da 32 bit e viene espresso in forma decimale separando ogni byte dall'altro con un punto (es. \texttt{192.168.1.87}).
-Gli indirizzi non possono assolutamente essere scelti in modo arbitrario: una parte di esso è determinata dalla sottorete a cui è collegato.
-
-La strategia di assegnazione degli indirizzi Internet è detta CIDR. Ogni indirizzo IP ha un ulteriore identificatore: la maschera di sottorete.
+Gli indirizzi non privati non possono assolutamente essere scelti in modo arbitrario: una parte di esso è determinata dalla sottorete a cui appartiene.
+\\\\
+Ogni indirizzo IP è associato a una cosiddetta maschera di sottorete.
 
 Indirizzo IP e maschera di sottorete insieme prendono la forma \texttt{a.b.c.d/x}. Ciò rappresenta che i primi \texttt{x} bit più a sinistra dell'indirizzo definiscono l'indirizzo della sottorete mentre i restanti \texttt{32-x} bit sono usati per identificare un dispositivo interno o un'ulteriore sottorete.
 
+In altre parole la maschera di sottorete è un numero che, combinato con un indirizzo IP, determina la parte dell'indirizzo che identifica la rete e la parte che identifica l'host all'interno di quella rete.
+
 Ad esempio l'indirizzo dell'host \texttt{192.168.1.52} che ha maschera di sottorete \texttt{24} viene scritto come \texttt{192.168.1.52/24} e indica che l'indirizzo della sottorete è \texttt{192.168.1.0} e tutti i dispositivi ad essa collegati dovranno avere la forma \texttt{192.168.1.xxx}. 
 
-La dimensione della maschera di sottorete è scelta dall'amministratore del sistema, con limiti inferiori alla sua dimensione. Ad esempio se ad un amministratore viene assegnato di gestire lo spazio \texttt{192.168.1.0/24} potrà creare al suo interno sottoreti di dimensione da 25 a 31 bit.
-
-Prima del CIDR gli indirizzi IP erano suddivisi in 3 classi: A,B e C con maschere di sottorete fisse rispettivamente di 8,16 e 24 bit. Ciò era poco flessibile.
-
+La dimensione della maschera di sottorete è scelta dall'amministratore del sistema, con i dovuti limiti. Ad esempio se ad un amministratore viene assegnato di gestire lo spazio \texttt{192.168.1.0/24} potrà creare al suo interno sottoreti di dimensione da 25 a 31 bit.
+\\\\
+Questa tecnica di assegnazione di indirizzi IP con relativa maschera di sottorete è nota come CIDR. Prima del CIDR gli indirizzi IP erano suddivisi in 3 classi: A,B e C con maschere di sottorete fisse rispettivamente di 8,16 e 24 bit. Ciò era poco flessibile.
+\\\\
 Le sottoreti sono parte fondamentale di Internet: non esiste alcun host o router fuori da una sottorete. Inoltre le sottoreti permettono di effettuare il routing: i router non instradano il traffico basandosi sull'indirizzo dell'host specifico, bensì sulla sua sottorete. A titolo esemplificativo, quando si invia un pacchetto a \texttt{192.168.1.52/24} tutti i router tranne l'ultimo lo indirizzeranno alla sottorete \texttt{192.168.1.0/24}. Sarà poi l'ultimo router a indirizzarlo a \texttt{.52}.
 
 Poiché Internet è semplicemente un insieme di sottoreti, \texttt{192.168.1.0/24} potrebbe essere una sottorete di \texttt{192.168.0.0/16} e quindi un pacchetto potrebbe essere inviato a questa sottorete, la quale si occuperà di inoltrarlo alla sottorete \texttt{192.168.1.0/24}.

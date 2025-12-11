@@ -1541,11 +1541,11 @@ In questo caso l'accodamento sarà assente nelle porte di input se i pacchetti a
 Nonostante una struttura di commutazione molto veloce, è possibile accodamento in uscita. Perché? Dato che la porta di uscita può trasmettere solo un pacchetto alla volta, $N-1$ pacchetti dovranno mettersi in coda sul collegamento di uscita prima di essere trasmessi. Inoltre l'uscita può trasmettere solo a $R_{line}$ e quindi la coda tenderà a crescere indefinitamente. Ciò dimostra che è possibile che si formino code di pacchetti alle porte di uscita anche quando la struttura di commutazione è $N$ volte più veloce della velocità di linea delle porte.
 
 \subsubsection*{Accodamento in ingresso}
-Se la struttura di commutazione è abbastanza veloce e l'arrivo di pacchetti è adeguatamente cadenziato, non si formeranno code nella singola porta di input, tuttavia è possibile che un pacchetto debba mettersi in attesa lo stesso perché sta aspettando il trasferimento di un pacchetto da un'altra porta di input verso la propria porta di output.
+Se la struttura di commutazione è abbastanza veloce e l'arrivo di pacchetti è adeguatamente cadenzato, non si formeranno code nella singola porta di input, tuttavia è possibile che un pacchetto debba mettersi in attesa lo stesso perché sta aspettando il trasferimento di un pacchetto da un'altra porta di input verso la propria porta di output.
 
 Facciamo un esempio: due pacchetti su due porte di ingresso diverse devono uscire sulla stessa porta di uscita. La porta di uscita non può riceverle entrambe contemporaneamente quindi uno dei pacchetti deve rimanere in attesa.
 
-Se vediamo tutte le porte di input come un'"unica" porta, allora sì, può verificarsi una coda, ma è comunque negligibile in quanto non tenderebbe a crescere indefinitamente.
+Se vediamo tutte le porte di input come un' "unica" porta, allora sì, può verificarsi una coda, ma è comunque negligibile in quanto non tenderebbe a crescere indefinitamente.
 \\\\
 Che cosa avviene invece avviene se la struttura di commutazione non è sufficientemente veloce?
 In questo caso può verificarsi accodamento alla singola porta di ingresso.
@@ -1578,8 +1578,19 @@ Se un pacchetto appartenente alla classe a bassa priorità sta venendo trasmesso
 
 \subsubsection*{Round robin e accodamento equo ponderato}
 In Round robin i pacchetti vengono suddivisi in classi ma senza una rigida priorità che differenzia una dall'altra. È infatti prevista una sequenza ciclica tra classi. Se ci sono tre classi prima viene inviato un pacchetto appartenente alla classe uno, poi uno appartenente alla classe due e infine uno appartenente alla classe 3 per poi riprendere nuovamente dall'inizio.
+\\
+\\
+Per superare la limitazione di Round Robin che non ha priorità, si è sviluppato l'algoritmo equo ponderato. Per ciascuna classe $i$ si assegna un peso $w_i$: più il peso sarà alto maggiore banda sarà dedicata a quella specifica classe.
+L'algoritmo infatti cerca di dare a ogni classe un peso di $$ \frac{w_i}{\sum_{j=1}^{numero\ di \ classi} w_j}  $$
 
-L'accodamento equo ponderato funziona in maniera simile ma a ciascuna classe $i$ è assegnata un peso $w_i$. La classe $i$ avrà la garanzia di ricevere una certa frazione di larghezza di banda \textbf{TODO: Capire!!!}
+Con un esempio probabilmente è più chiaro:
+\begin{itemize}
+	\item Peso classe 1 ($w_1$) = 5
+	\item Peso classe 2 ($w_2$) = 8
+	\item Peso classe 3 ($w_3$) = 6
+\end{itemize}
+
+La classe 2 ha un peso $\frac{8}{5+8+6}$ = 0,42 pertanto questo algoritmo darà a questa classe il $42\%$ della banda totale. Se la banda massima è 1000kbit/s allora ogni secondo la classe 2 trasmetterà 420bit
 
 \section*{4.3 IP, IPv4, IPv6 e indirizzamento}
 Il protocollo principale del livello di rete di Internet è il protocollo IP. Attualmente sono in uso due versioni di IP: IPv4 e IPv6.
@@ -1608,7 +1619,7 @@ La massima quantità di dati che un frame a livello di collegamento può traspor
 
 Se tra host mittente e host destinatario ci sono solo collegaenti Ethernet, allora si costruirebbero datagrammi che non eccedono mai 1500 byte, ma nella realtà dei fatti possono esserci diversi protocolli a livello di collegamento tra i due pertanto al mittente non è nota la dimensione massima che può inviare.
 
-La soluzione constiste nel frammentare i dati del datagramma IP in due o più dtagrammi  IP più piccoli, detti frammenti. Quest'ultimi dovranno però essere riassemblati prima di raggiungere il livello di trasporto nella destinazione in quanto TCP e UDP si aspettano di ricevere segmenti completi dal livello di rete.
+La soluzione consiste nel frammentare i dati del datagramma IP in due o più datagrammi  IP più piccoli, detti frammenti. Quest'ultimi dovranno però essere riassemblati prima di raggiungere il livello di trasporto nella destinazione in quanto TCP e UDP si aspettano di ricevere segmenti completi dal livello di rete.
 
 I datagrammi vengono riassemblati nei sistemi periferici anziché che nei router per motivi di prestazioni.
 
@@ -1627,7 +1638,7 @@ Tutte le interfacce hanno un proprio indirizzo IP, pertanto un indirizzo IP non 
 Ciò è dovuto al fatto che è l'interfaccia che fa parte di una rete, non l'host in sè: si può avere un host su più reti se ha più interfacce. Questo è il caso dei router che fanno da ponte tra una rete e l'altra.
 
 Un indirizzo IP è composto da 32 bit e viene espresso in forma decimale separando ogni byte dall'altro con un punto (es. \texttt{192.168.1.87}).
-Gli indirizzi non possono assulutamente essere scelti in modo arbitrario: una parte di esso è determinata dalla sottorete a cui è collegato.
+Gli indirizzi non possono assolutamente essere scelti in modo arbitrario: una parte di esso è determinata dalla sottorete a cui è collegato.
 
 La strategia di assegnazione degli indirizzi Internet è detta CIDR. Ogni indirizzo IP ha un ulteriore identificatore: la maschera di sottorete.
 

@@ -860,7 +860,8 @@ Generalmente il lato client usa un numero casuale di porta mentre lato server si
 Una socket UDP ricevente viene identificata completamente da una coppia che consiste di un indirizzo IP ricevente e un numero di porta ricevente.
 
 \subsubsection*{Multiplexing e demultiplexing orientati alla connessione (TCP)}
-Una differenza tra una socket UDP e una TCP risiede nel fatto che quest'ultima, a differenza della socket UDP, è identificata da quattro parametri: indirizzo IP di origine, porta di origine, indirizzo IP di destinazione, porta di destinazione. Eccezion fatta per i segmenti TCP che trasportano la richiesta per stabilire la connessione.
+Una differenza tra una socket UDP e una TCP risiede nel fatto che quest'ultima, a differenza della socket UDP, è identificata da quattro parametri: indirizzo IP di origine, porta di origine, indirizzo IP di destinazione, porta di destinazione.
+Le socket in cui solo due elementi sono noti: IP destinazione e numero di porta destinazione sono adibite a ricevere richieste di connessione. Ad esempio la porta \texttt{(IndirizzoIp, 80, null, null)} serve solo a ricevere richieste di instaurazione di connessione sulla porta 80.
 
 Ne consegue che lato ricevente, a fronte di tutti i parametri che restano uguali tranne l'inidirzzo IP o numero di porta mittente, i pacchetti verrano rediretti a un altro processo.
 
@@ -894,7 +895,7 @@ A parte questa funzionalità e un controllo molto semplice sugli errori, UDP non
 Perché preferire UDP, che non offre molto, rispetto a TCP? La risposta è che molte applicazioni sono più adatte con UDP per i seguenti motivi:
 \begin{itemize}
 	\item Controllo più fine a livello di applicazione su quali dati sono inviati e quando: nonappena un processo applicativo passa dei dati a UDP, questi li impacchetta in un segmento che trasferisce immediatamente al livello di rete. TCP, invece, introduce in meccanismo di controllo della congestione che ritarda l'invio. Inoltre quest'ultimo manda continuamente segmenti sulla rete fin quando la destinazione non ha notificato l'avvenuta ricezione. TCP poi effettua un handshake, mentre UDP no e per tale motivo non introduce alcun ritardo nello stabilire una nuova connessione. Dato che le applicazioni in tempo reale spesso richiedono una velocità minima di trasmissione, non sopportano ritardi ma sopportano piccole perdite, TCP mal si adatta a quest'ultime.
-	\item Nessun stato di connessione: TCP mantiene lo stato della connessione nei sistemi periferici. Inoltre conserva anche buffer di ricezione e di invio, parametri per il controllo della congestione e parametri sul numero di sequenza e di acknowledgment. UDP, invece, non conserva lo stato della connessione e non tiene traccia di alcun parametro e pertanto risulta più leggero.
+	\item Nessuno stato di connessione: TCP mantiene lo stato della connessione nei sistemi periferici. Inoltre conserva anche buffer di ricezione e di invio, parametri per il controllo della congestione e parametri sul numero di sequenza e di acknowledgment. UDP, invece, non conserva lo stato della connessione e non tiene traccia di alcun parametro e pertanto risulta più leggero.
 	\item Minor spazio usato per l'intestazione del segmento: l'intestazione TCP aggiunge 20 byte mentre UDP ne aggiunge 8.
 \end{itemize}
 
@@ -922,7 +923,7 @@ Il checksum in UDP viene utilizzato per determinare se i bit del segmento sono s
 Il mittente effettua il complemento a 1 della somma di tutte le parole da 16 bit e conserva tale dato nel campo checksum (in altre parole suddivide l'intero segmento in porzioni da 16 bit, ne fa la somma e ne salva all'interno il complemento a uno [gli 0 diventano 1 e gli 1 diventano 0]). Il ricevente usa il complemento per verificare che il risultato della somma tra le somme delle parole che ha ricevuto e il complemento nel pacchetto faccia 111....
 Se c'è almeno uno zero allora si è verificato un errore.
 
-Ci si potrebbe chiedere perché UDP metta a disposizione un checksum se i protocolli a livello di collegamento (Ethernet, Wifi ecc) facciano lo stesso. I motivi sono sostanzialmente due: (1) non c'è garanzia che tutti i collegamenti sul percorso controllino gli errori e (2) l'errore si potrebbe verificare mentre il segmento è dentro un router.
+Ci si potrebbe chiedere perché UDP metta a disposizione un checksum se i protocolli a livello di collegamento (Ethernet, Wifi ecc) facciano lo stesso. I motivi sono sostanzialmente due: (1) non c'è garanzia che tutti i collegamenti sul percorso controllino gli errori e (2) l'errore si potrebbe verificare mentre il segmento è dentro un router (e non sul mezzo trasmissivo).
 
 Sebbene UDP metta a disposizione tale funzionalità, non fa nulla per risolvere le situazioni di errore.
 

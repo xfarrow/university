@@ -814,13 +814,13 @@ Per comunicazione logica si intende, dal punto di vista dell'applicazione, che t
 
 I protocolli a livello di trasporto sono implementati nei sistemi periferici e quindi non nei router della rete.
 
-Lato mittente, il livello di trasporto converte i messaggi che riceve da un processo applicativo in pacchetti a livello di trasporto detti segmenti, spezzando (se necessario) i messaggi in parti più piccole a aggiungendo informazioni header che a sua volta lo passa al livello di rete.
+Lato mittente, il livello di trasporto converte i messaggi che riceve da un processo applicativo in pacchetti a livello di trasporto detti segmenti, spezzando (se necessario) i messaggi in parti più piccole e aggiungendo informazioni header. A sua volta passa il segmento al livello di rete.
 
 I router agiscono solo sul datagramma senza esaminare i campi del segmento incapsulato al suo interno.
 
 \subsection*{3.1.1  Relazione tra i livelli di trasporto e la rete}
 
-Ribadiamo che un protocollo a livello di trasporto mette a disposizione una comunicazione logica tra processi che vengono eseguiti su host diversi (usando meccanismi interni di smistamento) mentre un protocollo a livello di rete fornisce comunicazione logica tra host (usando meccanismi interni di smistamento, quali il routing).
+Ribadiamo che un protocollo a livello di trasporto mette a disposizione una comunicazione logica tra processi che vengono eseguiti su host diversi mentre un protocollo a livello di rete fornisce comunicazione logica tra host. Proprio come il protocollo di rete che utilizza algoritmi di routing per trovare l'host desiderato, anche il protocollo di trasporto utilizza un algoritmo per individuare il processo destinatario e consegnargli il messaggio; suddetto algoritmo è presente negli endpoint di rete (non nei router).
 
 Un protocollo di trasporto non fornisce alcuna indicazione su come i messaggi siano trasferiti all'interno della rete. 
 

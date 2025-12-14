@@ -1539,14 +1539,14 @@ Sia $R_{switch}$ il tasso al quale i pacchetti vengono trasferiti dalla porta di
 In questo caso l'accodamento sarà assente nelle porte di input se i pacchetti arrivano cadenzati adeguatamente (no "burst"), tuttavia, possono verificarsi code nelle porte di output, come vedremo di qui a breve.
 
 \subsubsection*{Accodamento in uscita}
-Nonostante una struttura di commutazione molto veloce, è possibile accodamento in uscita. Perché? Dato che la porta di uscita può trasmettere solo un pacchetto alla volta, $N-1$ pacchetti dovranno mettersi in coda sul collegamento di uscita prima di essere trasmessi. Inoltre l'uscita può trasmettere solo a $R_{line}$ e quindi la coda tenderà a crescere indefinitamente. Ciò dimostra che è possibile che si formino code di pacchetti alle porte di uscita anche quando la struttura di commutazione è $N$ volte più veloce della velocità di linea delle porte.
+Nonostante una struttura di commutazione molto veloce, è possibile che si crei accodamento in uscita. Perché? Innanzitutto notiamo, continuando con l'esempio sopra riportato, che nel caso in cui $N$ pacchetti giungano alla porta di uscita, quest'ultima può trasmettere solo un pacchetto alla volta. Per cui $N-1$ pacchetti dovranno mettersi in coda sulla porta di uscita prima di essere trasmessi. Inoltre l'uscita può trasmettere solo a $R_{line}$ e quindi la coda tenderà a crescere indefinitamente.
 
 D'altro canto se la struttura di commutazione non è sufficientemente veloce potrebbero non formarsi code alle porte di output. In questo caso ci saranno accodamenti alle porte di input.
 
 \subsubsection*{Accodamento in ingresso}
 Se la struttura di commutazione è abbastanza veloce e l'arrivo di pacchetti è adeguatamente cadenzato, non si formeranno code nella singola porta di input, tuttavia è possibile che un pacchetto debba mettersi in attesa lo stesso perché sta aspettando il trasferimento di un pacchetto da un'altra porta di input verso la propria porta di output.
 
-Facciamo un esempio: due pacchetti su due porte di ingresso diverse devono uscire sulla stessa porta di uscita. La porta di uscita non può riceverle entrambe contemporaneamente quindi uno dei pacchetti deve rimanere in attesa.
+Facciamo un esempio: due pacchetti su due porte di ingresso diverse devono uscire sulla stessa porta di uscita. La porta di uscita non può riceverli entrambe contemporaneamente quindi uno dei pacchetti deve rimanere in attesa nella porta di input.
 
 Se vediamo tutte le porte di input come un' "unica" porta, allora sì, può verificarsi una coda, ma è comunque negligibile in quanto non tenderebbe a crescere indefinitamente.
 \\\\

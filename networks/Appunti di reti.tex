@@ -1325,7 +1325,9 @@ TCP offre il meccanismo di controllo della congestione, imponendo a ciascun mitt
 Per fare questo, TCP fa tener traccia agli estremi della connessione una variabile aggiuntiva chiamata finestra di congestione, indicata con \texttt{cwnd}. Ricordandoci della variabile \texttt{rwnd} precedentemente menzionata, si avrà che TCP mittente imporrà che la seguente diseguaglianza risulti sempre soddisfatta:
 $$ \texttt{LastByteSent} - \texttt{LastByteAcked} \leq min\{\texttt{cwnd}, \texttt{rwnd}\} $$
 
-ricordandosi che \texttt{LastByteSent} - \texttt{LastByteAcked} equivale al numero di byte inviati ma di cui non si è ricevuto alcun acknowledgment.
+ricordandosi che \texttt{LastByteSent} - \texttt{LastByteAcked} equivale al numero di byte inviati ma di cui non si è ricevuto alcun acknowledgment. 
+
+In altre parole \texttt{cwnd} indica quanti segmenti inviati ma non riscontrati ("in volo") possono esserci al massimo in ogni determinato istante.
 
 Assumiamo che \texttt{rwnd} sia sufficientemente grande da essere ignorata e assumiamo che il mittente abbia sempre dati da inviare. Notiamo dunque che possono essere inviati al massimo \texttt{cwnd} byte di cui certamente non si può ricevere l'ACK in meno di RTT secondi. Ciò implica che il massimo della velocità trasmissiva è $\frac{\texttt{cwnd}}{RTT}$ byte/s. Ciò dimostra che modificando il valore di \texttt{cwnd} il mittente può regolare la velocità di invio sulla propria connessione.
 
@@ -1337,10 +1339,10 @@ La strategia di TCP è quello di incrementare la velocità di trasmissione in ri
 
 Per il comportamento di TCP sopracitato, si dice che TCP è auto-temporizzato.
 
-L'algoritmo di congestione di TCP presenta tre componenti: (1) slow start, (2) congestion avoidance e (3) fast recovery. Supponiamo che il mittente invii continuamente segmenti.
+L'algoritmo di congestione di TCP, chiamato Reno (RFC 2001 e RFC 5681 di cui il sottoscritto suggerisce la lettura) presenta tre componenti: (1) slow start, (2) congestion avoidance e (3) fast recovery. Supponiamo che il mittente invii continuamente segmenti.
 
 \subsubsection*{Slow start}
-Quando si stabilisce una connessione TCP, il valore di \texttt{cwnd} viene impostato a 1 MSS e si incrementa di 1 MSS ogniqualvolta un segmento trasmesso riceve un ACK. Questo processo ha come effetto una velocità di trasmissione iniziale lenta per poi crescere esponenzialmente.
+Quando si stabilisce una connessione TCP, il valore di \texttt{cwnd} viene impostato a 1 MSS e si incrementa di 1 MSS ogniqualvolta un segmento trasmesso riceve un ACK  (non viene incrementato ad ACK duplicati). Questo processo ha come effetto una velocità di trasmissione iniziale lenta per poi crescere esponenzialmente.
 
 Cresce esponenzialmente perché dopo la ricezione di un ACK del primo segmento trasmesso potrà trasmetterne due, dopodiché potrà trasmetterne 4,8,16 e così via. Ciò viene fatto per individuare velocemente la capacità della rete
 
@@ -1358,17 +1360,27 @@ Quando TCP entra in modalità congestion avoidance, il valore di \texttt{cwnd} �
 Congestion avoidance termina nei seguenti casi:
 \begin{itemize}
 	\item Se l'evento di perdita è stato causato da un timeout, si comporta allo stesso modo di Slow Start (ritornando in quest'ultimo)
-	\item In caso di tre ACK duplicati, la rete continua a consegnare pacchetti, pertanto la risposta di TCP è meno drastica: imposta il valore \texttt{ssthresh} a  $\texttt{cwnd}/2$ e successivamente dimezza il valore di \texttt{cwnd}, aggiungendo 3 (\texttt{cwnd} = $\frac{\texttt{cwnd}}{2}+3$), per poi entrare nello stato di fast recovery.
+	\item In caso di tre ACK duplicati, la rete continua a consegnare segmenti, pertanto la risposta di TCP è meno drastica: imposta il valore \texttt{ssthresh} a  $\texttt{cwnd}/2$ e successivamente dimezza il valore di \texttt{cwnd}, aggiungendo 3 (\texttt{cwnd} = $\frac{\texttt{cwnd}}{2}+3$), per poi effettuare una ritrasmissione rapida e successivamente entra nello stato di fast recovery.
 \end{itemize}
 
 \subsubsection*{Fast recovery}
 
 Fast Recovery non è obbligatorio secondo le specifiche di TCP, ma ne è un miglioramento. Permette infatti di evitare di andare in Slow Start qualora la rete non sia gravemente congestionata, che causerebbe \texttt{cwnd} di nuovo a ritornare a 1 MSS.
 
-Durante la fase di fast recovery il valore di \texttt{cwnd} è incrementato di 1 MSS per ogni ACK duplicato ricevuto relativamente al segmento perso che ha causato l'entrata di TCP in modalità fast recovery.
+Si noti che se arrivano ACK duplicati allora si ha una discrepanza contabile tra il numero di pacchetti "in volo" e quelli effettivamente in volo. Infatti si consideri la seguente disequazione mostrata in precedenza:
+
+$$ \texttt{LastByteSent} - \texttt{LastByteAcked} \leq \texttt{cwnd} $$
+
+
+Se \texttt{LastByteAcked} non avanza perché si ricevono ACK duplicati, allora la differenza \texttt{LastByteSent} - \texttt{LastByteAcked} aumenta sempre di più fino a raggiungere \texttt{cwnd}. Allora facciamo aumentare \texttt{cwnd} per ogni ACK duplicato. Poiché prima di entrare in Fast Recovery abbiamo ricevuto 3 ACK duplicati, \texttt{cwnd} viene "artificialmente" incrementata di 3 per tenerne conto.
+Perché in questo caso un ACK duplicato è un segnale positivo? Perché si ricevono ACK duplicati solo quando il ricevente ha ricevuto un segmento, pertanto i segmenti stanno fluendo all'interno della rete sebbene si sia verificata una perdita.
+
+Questo fa sì che la pipe resti aperta (\texttt{LastByteSent} e \texttt{cwnd} si incrementano circa all'unisono).
+\\\\
+Durante la fase di fast recovery il valore di \texttt{cwnd} è incrementato di 1 MSS per ogni ACK duplicato ricevuto relativamente al segmento perso che ha causato l'entrata di TCP in modalità fast recovery. Ciò implica che la congestion window cresce a ogni ACK duplicato.
 
 \begin{itemize}
-	\item Quando arriva un ACK per il segmento perso, TCP entra nello stato di congestion avoidance dopo aver ridotto il valore di \texttt{cwnd}
+	\item Quando arriva un ACK per il segmento perso, TCP entra nello stato di congestion avoidance dopo aver impostato il valore di \texttt{cwnd} a \texttt{sshtresh} (che è la metà di \texttt{cwnd} quando è entrato in fast recovery)
 	\item Se si verifica un timeout vi è invece una transizione dallo stato di fast recovery a quello di slow start, intraprendendo le stesse azioni di Congestion avoidance e Slow Start: \texttt{ssthresh} è posto a metà di \texttt{cwnd} prima che quest'ultimo venga impostato a 1 MSS
 \end{itemize}
 

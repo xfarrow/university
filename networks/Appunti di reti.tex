@@ -1786,7 +1786,21 @@ Di seguito sono specificate alcune delle più importanti azioni possibili:
 	\item Modifica dei campi: I valori nei campi d'intestazione dei pacchetti possono essere riscritti prima che vengano inoltrati alla porta di uscita
 \end{itemize}
 
+\chapter{Livello di rete: piano di controllo}
 
+\section*{Algoritmo di Dijkstra (BOZZA)}
+
+L'algoritmo di Dijkstra (aka Dykstra) permette di
+\begin{itemize}
+	\item Trovare il percorso minimo tra A e qualunque altro nodo all'interno del grafo. Il grafo può essere sia orientato che non orientato
+	\item Per ogni nodo X appartenente al grafo, individua Y che è il nodo precedente a X nel percorso minimo tra A a X
+\end{itemize}
+
+I pesi devono essere non negativi
+
+Fase di inizializzazione: Si imposta la distanza tra A e tutti gli altri nodi a $+\infty$
+\\\\
+Fase iterativa: Cicla su tutti i nodi adiacenti di A: per ognuno di essi controlla i propri adiacenti. Ripeti il ciclo per il nodo a distanza minima. Ad ogni iterazione trovo sempre un nodo tale per cui la distanza tra esso ed A è la minima
 
 
 

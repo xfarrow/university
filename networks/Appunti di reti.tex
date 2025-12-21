@@ -1788,6 +1788,26 @@ Di seguito sono specificate alcune delle più importanti azioni possibili:
 
 \chapter{Livello di rete: piano di controllo}
 
+
+Il piano di controllo gestisce la logica di rete globale.
+
+\section*{5.1 Introduzione}
+Abbiamo visto che esistono due approcci su come le tabelle di inoltro vengono calcolate:
+\begin{itemize}
+	\item Controllo locale: L'algoritmo di instradamento viene eseguito su ogni singolo router. Dunque al suo interno vengono effettuate sia operazioni di inoltro (piano dei dati) che di instradamento (piano di controllo)
+	\item Controllo logicamente centralizzato: Il controller logicamente centralizzato calcola e distribuisce le tabelle di inoltro
+\end{itemize}
+
+\section*{5.2 Algoritmi di instradamento}
+Lo scopo degli algoritmi di instradamento è quello di determinare i percorsi tra una sorgente e un destinatario che ha costo minimo.
+
+Per formulare i problemi di instradamento si utilizza un grafo $G = (N, E)$, ovvero un insieme di $N$ nodi e un insieme $E$ di archi, ove ciascun arco connette una coppia di nodi di $N$. I nodi del grafo rappresentano i router e gli archi rappresentano i collegamenti fisici tra di loro.
+
+A un arco viene anche associato il costo per attraversalo che può rappresentare la lunghezza fisica del collegamento, la sua velocità o il prezzo per utilizzarlo.
+
+Consideriamo sempre grafi non orientati. Dati due nodi qualsiasi, possono esistere più percorsi che li congiungono, ciascuno con il proprio costo. Il costo di un percorso è semplicemente la somma degli archi di cui è composto. Uno o più di questi percorsi ha il costo minimo. Il problema quindi è determinare quale sia questo percorso.
+
+
 \section*{Algoritmo di Dijkstra (BOZZA)}
 
 L'algoritmo di Dijkstra (aka Dykstra) permette di

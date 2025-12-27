@@ -1810,24 +1810,46 @@ Consideriamo sempre grafi non orientati. Dati due nodi qualsiasi, possono esiste
 Gli algoritmi di instradamento sono classificabili in due macrocategorie:
 \begin{itemize}
 	\item Algoritmi di instradamento centralizzati: Calcolano il percorso a costo minimo tra una sorgente e una destinazione avendo una conoscenza globale e completa della rete. Questi algoritmi vengono definiti Link-State (LS)
-	\item 
+	\item Algoritmi di instradamento decentralizzati: Il percorso a costo minimo viene calcolato in modo distribuito. Inizialmente i nodi conoscono solo i costi dei collegamenti a loro incidenti. Scambiandosi informazioni con i nodi adiacenti sono in grado di calcolare il percorso minimo. Solitamente tali algoritmi sono direttamente implementati nei router perché hanno poco senso in un contesto con un controller centralizzato.
 \end{itemize}
 
+Un secondo criterio per classificare gli algoritmi di instradamento riguarda il fatto di essere statici o dinamici. Quest'ultimi determinano gli instradamenti automaticamente al variare della topologia o dei costi della rete, cosa che non avviene per un algoritmo statico.
 
-\section*{Algoritmo di Dijkstra (BOZZA)}
+Un terzo modo per classificare gli algoritmi di instradamento è il fatto di essere più o meno sensibili al carico della rete. In un algoritmo sensibile al carico i costi dei collegamenti vengono fatti variare dinamicamente per riflettere il livello corrente di congestione. I moderni algoritmi di instradamento sono insensibili al carico.
 
-L'algoritmo di Dijkstra (aka Dykstra) permette di
+\subsection*{5.2.1 Instradamento Link-State (LS) / Dijkstra Algorithm}
+In un algoritmo LS la topologia di rete e tutti i costi dei collegamenti sono noti.
+
+L'algoritmo di Dijkstra permette di:
 \begin{itemize}
-	\item Trovare il percorso minimo tra A e qualunque altro nodo all'interno del grafo. Il grafo può essere sia orientato che non orientato
-	\item Per ogni nodo X appartenente al grafo, individua Y che è il nodo precedente a X nel percorso minimo tra A a X
+	\item Trovare il costo del percorso minimo tra A e qualunque altro nodo all'interno del grafo.
+	\item Per ogni nodo X appartenente al grafo, individua Y che è il nodo precedente a X nel percorso minimo tra A a X. Questo permette di ricostruire il percorso completo in maniera iterativa.
 \end{itemize}
 
-I pesi devono essere non negativi
+Affinché l'algoritmo sia corretto, i pesi devono essere non negativi.
 
-Fase di inizializzazione: Si imposta la distanza tra A e tutti gli altri nodi a $+\infty$
-\\\\
-Fase iterativa: Cicla su tutti i nodi adiacenti di A: per ognuno di essi controlla i propri adiacenti. Ripeti il ciclo per il nodo a distanza minima. Ad ogni iterazione trovo sempre un nodo tale per cui la distanza tra esso ed A è la minima
+\subsubsection*{Funzionamento}
 
+Il sottoscritto consiglia di cercare in rete il funzionamento dell'algoritmo di Dijkstra: molto più semplice capirlo graficamente. Anche sul quaderno sono presenti degli esempi.
+
+L'algoritmo ha due fasi:
+
+\begin{itemize}
+	\item Fase di inizializzazione: Si imposta la distanza tra $A$ ("nodo sorgente") e tutti gli altri nodi a $+\infty$. Si imposta la distanza tra $A$ ed $A$ a zero, si imposta $A$ come esplorato e si passa alla fase iterativa.
+	\item Fase iterativa: In questo momento ci troviamo in un nodo esplorato $u$. Controlliamo tutti gli adiacenti di $u$ chiamati $adj(u)$: Per ogni $adj(u)$ chiamato $v$ si controlla la distanza tra quest'ultimo ed il nodo sorgente. Se il peso di questo percorso risultasse minore di un peso già memorizzato tra $A$ e $v$, si aggiorna il nuovo peso e si imposta il precedente di $v$ a $u$. Adesso ci si sposta in uno degli $adj(u)$ non esplorati che ha distanza minima da $A$, lo si imposta come esplorato e si ripete la fase iterativa. Ogni volta che si imposta un nodo come esplorato, la distanza tra quest'ultimo e $A$ risulta definitivamente nota. Più formalmente, a ogni $k$-esima iterazione, i percorsi a costo minimo sono noti per $k$ destinazioni. 
+\end{itemize}
+
+Nota: In questa descrizione abbiamo impostato come "esplorato" un nodo prima di averne analizzato gli adiacenti. Nel libro di testo invece imposta come esplorato un nodo dopo averne visitato gli adiacenti. Non cambierebbe nulla.
+
+Il costo di questo algoritmo è $O(n^2)$ ma se si una un heap il tempo è $O(log(n))$
+
+\subsection*{5.2.2 Instradamento Distance Vector (DV) / Bellman-Ford Algorithm}
+Se l'instradamento LS usa informazioni globali, quello DV usa solo informazioni locali. DV è distribuito, asincrono e auto-terminante.
+\begin{itemize}
+	\item Distribuito perché il calcolo viene effettuato su ogni router
+	\item Asincrono perché non richiede che tutti i nodi operino al passo con gli altri
+	\item Auto-terminante perché non c'è un messaggio chiaro di terminazione: semplicemente quando nota che non c'è più nulla da fare si blocca.
+\end{itemize}
 
 
 

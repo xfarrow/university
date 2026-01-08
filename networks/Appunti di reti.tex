@@ -1817,7 +1817,7 @@ Un secondo criterio per classificare gli algoritmi di instradamento riguarda il 
 
 Un terzo modo per classificare gli algoritmi di instradamento è il fatto di essere più o meno sensibili al carico della rete. In un algoritmo sensibile al carico i costi dei collegamenti vengono fatti variare dinamicamente per riflettere il livello corrente di congestione. I moderni algoritmi di instradamento sono insensibili al carico.
 
-\subsection*{5.2.1 Instradamento Link-State (LS) / Dijkstra Algorithm}
+\subsection*{5.2.1 Instradamento Link-State (LS) / Algoritmo di Dijkstra}
 In un algoritmo LS la topologia di rete e tutti i costi dei collegamenti sono noti.
 
 L'algoritmo di Dijkstra permette di:
@@ -1843,13 +1843,28 @@ Nota: In questa descrizione abbiamo impostato come "esplorato" un nodo prima di 
 
 Il costo di questo algoritmo è $O(n^2)$ ma se si una un heap il tempo è $O(log(n))$
 
-\subsection*{5.2.2 Instradamento Distance Vector (DV) / Bellman-Ford Algorithm}
+\subsection*{5.2.2 Instradamento Distance Vector (DV) / Algoritmo Bellman-Ford}
 Se l'instradamento LS usa informazioni globali, quello DV usa solo informazioni locali. DV è distribuito, asincrono e auto-terminante.
 \begin{itemize}
 	\item Distribuito perché il calcolo viene effettuato su ogni router
 	\item Asincrono perché non richiede che tutti i nodi operino al passo con gli altri
 	\item Auto-terminante perché non c'è un messaggio chiaro di terminazione: semplicemente quando nota che non c'è più nulla da fare si blocca.
 \end{itemize}
+
+Prima di presentare l'algoritmo è bene dapprima presentare la legge di Bellman-Ford.
+\\\\
+\subsubsection*{Definizioni}
+\begin{itemize}
+	\item $\delta(x,y)$: costo del percorso minimo da $x$ a $y$
+	\item $adj(x)$: insieme dei nodi adiacenti a $x$
+	\item $w(x,v)$: peso dell'arco che connette direttamente $x$ e $v$
+\end{itemize}
+
+\subsubsection*{Legge}
+$$\delta(x,y) = MIN(\forall v \in adj(x), w(x,v) + \delta(v,y))$$
+
+\subsubsection*{Spiegazione}
+La formula sta a indicare che il costo minimo da $x$ a $y$ è $w(x,v) + \delta(v,y)$ calcolato su tutti i nodi $v$ adiacenti a $x$. Si noti come questa sia una formula ricorsiva in quando $\delta(v,y)$ sarà calcolata allo stesso modo.
 
 
 

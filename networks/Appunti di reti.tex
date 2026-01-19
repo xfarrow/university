@@ -12,7 +12,8 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{enumitem}
-\usepackage{float} 
+\usepackage{float}
+\usepackage{listings}
 \renewcommand{\contentsname}{Indice}
 % Redefine the caption format to remove "Figure" and the number
 \captionsetup[figure]{labelformat=empty}
@@ -1863,8 +1864,57 @@ Prima di presentare l'algoritmo è bene dapprima presentare la legge di Bellman-
 \subsubsection*{Legge}
 $$\delta(x,y) = MIN(\forall v \in adj(x), w(x,v) + \delta(v,y))$$
 
-\subsubsection*{Spiegazione}
+\subsubsection*{Spiegazione della legge}
 La formula sta a indicare che il costo minimo da $x$ a $y$ è $w(x,v) + \delta(v,y)$ calcolato su tutti i nodi $v$ adiacenti a $x$. Si noti come questa sia una formula ricorsiva in quando $\delta(v,y)$ sarà calcolata allo stesso modo.
+\\
+\\
+La formula di Bellman-Ford fornisce le righe della tabella di inoltro del nodo che la esegue.
+
+\subsubsection*{Algoritmo eseguito dal nodo $x$}
+\begin{lstlisting}[escapeinside={(*}{*)}]
+BellmanFord()
+	
+	foreach y in N:
+		if y is adjacent:
+			(*$\Delta(x,y)$*) = w(x,y)
+		else:
+			(*$\Delta(x,y)$*) = (*$\infty$*)
+	
+	foreach v (*$\in$*) adj(x)
+		Send(v, (*$\Delta_x$*))
+	
+	
+	wait until either I receive a distance vector 
+	from an adjacent or I see a weight changing on 
+	the edge connecting me to an adjacent:
+		foreach y in N:
+			(*$\Delta(x, y)$*) = MIN((*$\forall v \in adj(x), w(x,v) + \Delta(v,y)$*))
+		if (*$\Delta_x$*) has changed:
+			foreach v (*$\in$*) adj(x)
+				Send(v, (*$\Delta_x$*))
+\end{lstlisting}
+
+L'algoritmo estende le definizioni con:
+\begin{itemize}
+	\item $\Delta(x,y)$: \textbf{Stima} della distanza tra $x$ e $y$. Tende a convergere verso $\delta(x,y)$
+	\item $\Delta_x$: Vettore che contiene tutti i $\Delta(x,y)$ per ogni $y \in N$ chiamato vettore delle distanze
+\end{itemize}
+
+L'algoritmo funziona in questo modo: nella fase di inizializzazione aggiunge al vettore delle distanze i costi verso i suoi vicini e invia a questi ultimi il proprio vettore. Vi è poi una fase di loop perpetuo in cui entra se almeno una delle due condizioni è vera: (1) il costo di un arco verso un proprio vicino cambia oppure (2) riceve il vettore delle distanze da uno dei suoi vicini. Calcola dunque le proprie distanze e se $\Delta_x$ cambia, lo invia ai propri vicini. Questo fa sì che i vicini ottengano una stima più corretta, e, come un effetto domino, tutti i nodi otterranno una stima via via sempre più vicina alla realtà fin quando non si arriva allo stato in cui l'algoritmo si ferma su tutti i nodi, indicando che $\Delta_x = \delta_x \ \forall x \in N$
+
+In alcune situazioni questo algoritmo può portare a instradamenti ciclici.
+
+\subsubsection*{Confronto tra gli istradamenti LS e DV}
+Nel DV ciascun nodo dialoga solo con i vicini direttamente connessi, informandoli delle stime da sè stesso a tutti gli altri nodi della rete.
+
+Nell'LS ciascun nodo dialoga con tutti gli altri nodi della rete, ma comunica loro solo i costi dei collegamenti ad esso direttamente connessi.
+
+Vediamo un confronto tra i due:
+\begin{itemize}
+	\item Complessità dei messaggi: In LS ogni nodo deve comunicare il costo dei collegamenti ad esso connessi a tutti gli altri nodi della rete. Ciò implica l'invio di $|V| * |E|$ messaggi. In DV il numero di messaggi può variare
+	\item LS è un algoritmo $O(|N|^2)$ che richiede lo scambio di $|V| * |E|$ messaggi. La velocità di convergenza di DV può variare e presenta problemi quali cicli di instradamento e conteggio all'infinito
+	\item Robustezza: I calcol
+\end{itemize}
 
 
 

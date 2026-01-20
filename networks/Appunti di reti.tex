@@ -1905,16 +1905,9 @@ L'algoritmo funziona in questo modo: nella fase di inizializzazione aggiunge al 
 In alcune situazioni questo algoritmo può portare a instradamenti ciclici.
 
 \subsubsection*{Confronto tra gli istradamenti LS e DV}
-Nel DV ciascun nodo dialoga solo con i vicini direttamente connessi, informandoli delle stime da sè stesso a tutti gli altri nodi della rete.
+Nel DV ciascun nodo dialoga solo con i vicini direttamente connessi, informandoli delle stime da sè stesso a tutti gli altri nodi, mentre in LS ciascun nodo dialoga con tutti gli altri nodi della rete, ma comunica loro solo i costi dei collegamenti ad esso direttamente connessi.
 
-Nell'LS ciascun nodo dialoga con tutti gli altri nodi della rete, ma comunica loro solo i costi dei collegamenti ad esso direttamente connessi.
-
-Vediamo un confronto tra i due:
-\begin{itemize}
-	\item Complessità dei messaggi: In LS ogni nodo deve comunicare il costo dei collegamenti ad esso connessi a tutti gli altri nodi della rete. Ciò implica l'invio di $|V| * |E|$ messaggi. In DV il numero di messaggi può variare
-	\item LS è un algoritmo $O(|N|^2)$ che richiede lo scambio di $|V| * |E|$ messaggi. La velocità di convergenza di DV può variare e presenta problemi quali cicli di instradamento e conteggio all'infinito
-	\item Robustezza: I calcol
-\end{itemize}
+Nessuno dei due è Pareto-superior all'altro.
 
 
 
